@@ -80,9 +80,10 @@ export default function DocumentPage() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          <div className="prose prose-sm max-w-none">
-            {document.content}
-          </div>
+          <div 
+            className="prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: document.content }}
+          />
         </CardContent>
       </Card>
     </div>
