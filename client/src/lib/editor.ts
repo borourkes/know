@@ -24,13 +24,15 @@ export const editorConfig = {
       },
     }),
   ],
-  parseContent: (content: string) => {
-    if (!content) return '';
-    try {
-      return JSON.parse(content);
-    } catch {
-      // If it's not JSON, return as is (for backward compatibility)
-      return content;
-    }
+};
+
+// Helper to ensure content is properly parsed
+export const parseContent = (content: string) => {
+  if (!content) return '';
+  try {
+    return JSON.parse(content);
+  } catch {
+    // If it's not JSON, return as is (for backward compatibility)
+    return content;
   }
 };

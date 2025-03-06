@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
-import { editorConfig } from '@/lib/editor';
+import { editorConfig, parseContent } from '@/lib/editor';
 
 type DocumentViewerProps = {
   content: string;
@@ -9,7 +9,7 @@ type DocumentViewerProps = {
 export function DocumentViewer({ content, className }: DocumentViewerProps) {
   const editor = useEditor({
     ...editorConfig,
-    content: editorConfig.parseContent(content),
+    content: parseContent(content),
     editable: false,
   });
 

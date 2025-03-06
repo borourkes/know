@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
-import { editorConfig } from "@/lib/editor";
+import { editorConfig, parseContent } from "@/lib/editor";
 
 type RichTextEditorProps = {
   content: string;
@@ -28,7 +28,7 @@ type RichTextEditorProps = {
 export function RichTextEditor({ content, onChange, className }: RichTextEditorProps) {
   const editor = useEditor({
     ...editorConfig,
-    content: editorConfig.parseContent(content),
+    content: parseContent(content),
     onUpdate: ({ editor }) => {
       onChange(JSON.stringify(editor.getJSON()));
     },
@@ -67,32 +67,12 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
               text: ' '
             }]
           }, {
-            type: 'paragraph',
-            content: [{
-              type: 'text',
-              marks: [{
-                type: 'textStyle',
-                attrs: { class: 'w-full aspect-video rounded-lg' }
-              }],
-              text: `[Video: ${file.name}]`
-            }]
+            type: 'youtube',
+            attrs: {
+              src: e.target.result,
+              class: 'w-full aspect-video rounded-lg',
+            }
           }]).run();
-
-          const video = document.createElement('video');
-          video.src = e.target.result;
-          video.controls = true;
-          video.className = 'w-full aspect-video rounded-lg';
-          const selection = editor.view.state.selection;
-          const pos = selection.$to.pos;
-          editor.view.dispatch(
-            editor.view.state.tr.insert(
-              pos,
-              editor.schema.nodes.paragraph.create(
-                null,
-                editor.schema.text(video.outerHTML)
-              )
-            )
-          );
         }
       };
       reader.readAsDataURL(file);
@@ -123,32 +103,12 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
               text: ' '
             }]
           }, {
-            type: 'paragraph',
-            content: [{
-              type: 'text',
-              marks: [{
-                type: 'textStyle',
-                attrs: { class: 'w-full aspect-video rounded-lg' }
-              }],
-              text: `[Video: ${file.name}]`
-            }]
+            type: 'youtube',
+            attrs: {
+              src: e.target.result,
+              class: 'w-full aspect-video rounded-lg',
+            }
           }]).run();
-
-          const video = document.createElement('video');
-          video.src = e.target.result;
-          video.controls = true;
-          video.className = 'w-full aspect-video rounded-lg';
-          const selection = editor.view.state.selection;
-          const pos = selection.$to.pos;
-          editor.view.dispatch(
-            editor.view.state.tr.insert(
-              pos,
-              editor.schema.nodes.paragraph.create(
-                null,
-                editor.schema.text(video.outerHTML)
-              )
-            )
-          );
         }
       };
       reader.readAsDataURL(file);
