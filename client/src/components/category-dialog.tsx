@@ -6,19 +6,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type CategoryDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingCategory?: { id: number; name: string; description: string };
 };
 
-export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
+export function CategoryDialog({ open, onOpenChange, editingCategory }: CategoryDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [category, setCategory] = useState({ name: "", description: "" });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [category, setCategory] = useState({
+    name: editingCategory?.name || "",
+    description: editingCategory?.description || ""
+  });
 
-  const { mutate: createCategory, isPending } = useMutation({
+  const { mutate: createCategory, isPending: isCreating } = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/categories", category);
       return res.json();
@@ -41,37 +56,120 @@ export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
     }
   });
 
+  const { mutate: updateCategory, isPending: isUpdating } = useMutation({
+    mutationFn: async () => {
+      if (!editingCategory) return;
+      const res = await apiRequest("PATCH", `/api/categories/${editingCategory.id}`, category);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({
+        title: "Success",
+        description: "Category updated successfully",
+      });
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update category",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const { mutate: deleteCategory, isPending: isDeleting } = useMutation({
+    mutationFn: async () => {
+      if (!editingCategory) return;
+      const res = await apiRequest("DELETE", `/api/categories/${editingCategory.id}`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({
+        title: "Success",
+        description: "Category deleted successfully",
+      });
+      onOpenChange(false);
+      setShowDeleteDialog(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete category",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const isPending = isCreating || isUpdating || isDeleting;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New Category</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Input
-              placeholder="Category Name"
-              value={category.name}
-              onChange={(e) => setCategory({ ...category, name: e.target.value })}
-            />
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingCategory ? 'Edit Category' : 'Create New Category'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Input
+                placeholder="Category Name"
+                value={category.name}
+                onChange={(e) => setCategory({ ...category, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Category Description (optional)"
+                value={category.description}
+                onChange={(e) => setCategory({ ...category, description: e.target.value })}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1" 
+                onClick={() => editingCategory ? updateCategory() : createCategory()}
+                disabled={isPending || !category.name}
+              >
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editingCategory ? 'Update Category' : 'Create Category'}
+              </Button>
+              {editingCategory && (
+                <Button
+                  variant="outline"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={isPending}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            <Textarea
-              placeholder="Category Description (optional)"
-              value={category.description}
-              onChange={(e) => setCategory({ ...category, description: e.target.value })}
-            />
-          </div>
-          <Button 
-            className="w-full" 
-            onClick={() => createCategory()}
-            disabled={isPending || !category.name}
-          >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Category
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this category?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the category and all its associations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => deleteCategory()}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

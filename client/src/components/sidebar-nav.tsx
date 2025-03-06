@@ -16,10 +16,32 @@ type SidebarNavProps = {
 export function SidebarNav({ onSearch }: SidebarNavProps) {
   const [location] = useLocation();
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | undefined>();
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ['/api/categories']
   });
+
+  const handleCategoryClick = (category: Category, event: React.MouseEvent) => {
+    // Long press (500ms) to edit
+    let timeoutId: NodeJS.Timeout;
+
+    const handleMouseDown = () => {
+      timeoutId = setTimeout(() => {
+        setEditingCategory(category);
+        setCategoryDialogOpen(true);
+      }, 500);
+    };
+
+    const handleMouseUp = () => {
+      clearTimeout(timeoutId);
+    };
+
+    event.preventDefault();
+    handleMouseDown();
+
+    window.addEventListener('mouseup', handleMouseUp, { once: true });
+  };
 
   return (
     <div className="min-h-screen w-64 bg-sidebar border-r border-border">
@@ -54,7 +76,10 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
         <Button 
           variant="outline" 
           className="w-full justify-start"
-          onClick={() => setCategoryDialogOpen(true)}
+          onClick={() => {
+            setEditingCategory(undefined);
+            setCategoryDialogOpen(true);
+          }}
         >
           <FolderPlus className="mr-2 h-4 w-4" />
           New Category
@@ -101,6 +126,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
                     location === `/category/${category.id}` && 
                     "bg-sidebar-accent text-sidebar-accent-foreground"
                   )}
+                  onMouseDown={(e) => handleCategoryClick(category, e)}
                 >
                   <FolderOpen className="mr-2 h-4 w-4" />
                   {category.name}
@@ -113,7 +139,11 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
 
       <CategoryDialog 
         open={categoryDialogOpen}
-        onOpenChange={setCategoryDialogOpen}
+        onOpenChange={(open) => {
+          setCategoryDialogOpen(open);
+          if (!open) setEditingCategory(undefined);
+        }}
+        editingCategory={editingCategory}
       />
     </div>
   );
