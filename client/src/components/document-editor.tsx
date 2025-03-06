@@ -15,14 +15,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Category, Document } from "@shared/schema";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, ChevronDown } from "lucide-react";
 import { AIChat } from "./ai-chat";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp } from "lucide-react";
 
 type DocumentEditorProps = {
   documentId?: number;
@@ -42,6 +41,8 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
   const [_, setLocation] = useLocation();
   const [suggestions, setSuggestions] = useState<AISuggestions | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(true);
 
   const [doc, setDoc] = useState<Partial<Document>>(initialDoc || {
     title: "",
@@ -89,16 +90,20 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
   });
 
   const { mutate: getAiSuggestions, isPending: isGettingSuggestions } = useMutation({
-    mutationFn: async (content: string) => {
-      if (!content.trim()) {
+    mutationFn: async () => {
+      if (!doc.title || !doc.content) {
         throw new Error("Please add some content first");
       }
-      const res = await apiRequest("POST", "/api/ai/suggest", { content });
+      const res = await apiRequest("POST", "/api/ai/suggest", { 
+        content: `Title: ${doc.title}\n\nContent: ${doc.content}` 
+      });
       return res.json();
     },
     onSuccess: (data) => {
       setSuggestions(data);
       setShowChat(true);
+      setSuggestionsOpen(true);
+      setChatOpen(true);
       toast({
         title: "AI Suggestions Ready",
         description: "Scroll down to view the suggestions and chat with AI for more help.",
@@ -157,7 +162,7 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
       <div className="flex justify-between">
         <Button
           variant="outline"
-          onClick={() => getAiSuggestions(doc.content || "")}
+          onClick={() => getAiSuggestions()}
           disabled={isGettingSuggestions || !doc.content}
         >
           {isGettingSuggestions && (
@@ -178,14 +183,14 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
       </div>
 
       {suggestions && (
-        <Collapsible className="mt-8">
+        <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-xl font-bold">AI Suggestions</CardTitle>
-                <CollapsibleTrigger className="hover:opacity-70">
+                <CollapsibleTrigger asChild>
                   <Button variant="ghost" size="icon">
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className={`h-4 w-4 transform transition-transform ${suggestionsOpen ? 'rotate-180' : ''}`} />
                   </Button>
                 </CollapsibleTrigger>
               </div>
@@ -233,14 +238,14 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
       )}
 
       {showChat && (
-        <Collapsible className="mt-4">
+        <Collapsible open={chatOpen} onOpenChange={setChatOpen}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-xl font-bold">AI Chat Assistant</CardTitle>
-                <CollapsibleTrigger className="hover:opacity-70">
+                <CollapsibleTrigger asChild>
                   <Button variant="ghost" size="icon">
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className={`h-4 w-4 transform transition-transform ${chatOpen ? 'rotate-180' : ''}`} />
                   </Button>
                 </CollapsibleTrigger>
               </div>

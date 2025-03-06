@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -44,10 +45,10 @@ export function AIChat() {
   });
 
   const quickPrompts = [
-    "Help me write an introduction for this document",
-    "Suggest a structure for my content",
-    "Help me make this content more engaging",
-    "Help me summarize this content"
+    "Can you help me write an introduction for this document?",
+    "Can you suggest a structure for this content?",
+    "Can you help me make this content more engaging?",
+    "Can you help me summarize this content?"
   ];
 
   return (
