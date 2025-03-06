@@ -5,11 +5,8 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SearchDialog } from "@/components/search-dialog";
-import { AuthProvider } from "./lib/auth-provider";
-import { ProtectedRoute } from "./lib/protected-route";
 import Home from "@/pages/home";
 import Document from "@/pages/document";
-import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,24 +14,21 @@ function Router() {
 
   return (
     <div className="flex">
-      <Route path="/auth" component={AuthPage} />
+      <SidebarNav onSearch={() => setSearchOpen(true)} />
+      
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/document/:id" component={Document} />
+          <Route path="/category/:id" component={Home} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
 
-      <ProtectedRoute>
-        <SidebarNav onSearch={() => setSearchOpen(true)} />
-        <main className="flex-1">
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/document/:id" component={Document} />
-            <Route path="/category/:id" component={Home} />
-            <Route component={NotFound} />
-          </Switch>
-        </main>
-
-        <SearchDialog 
-          open={searchOpen} 
-          onOpenChange={setSearchOpen} 
-        />
-      </ProtectedRoute>
+      <SearchDialog 
+        open={searchOpen} 
+        onOpenChange={setSearchOpen} 
+      />
     </div>
   );
 }
@@ -42,10 +36,8 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
+      <Router />
+      <Toaster />
     </QueryClientProvider>
   );
 }
