@@ -43,7 +43,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Welcome to know | District</h1>
         <p className="text-muted-foreground mb-6">
-          Your central hub for creating, organizing, and collaborating on documents with AI assistance.
+          Get to KNOW all the internal processes and everything that is District
         </p>
         <Link href="/document/new">
           <Button size="lg" className="gap-2">
