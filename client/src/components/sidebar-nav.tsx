@@ -24,8 +24,10 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   return (
     <div className="min-h-screen w-64 bg-sidebar border-r border-border">
       <div className="p-6">
-        <h1 className="text-2xl font-semibold text-sidebar-foreground">
-          Know | District
+        <h1 className="text-2xl font-semibold text-sidebar-foreground flex items-center gap-2">
+          <span className="text-primary">know</span>
+          <span className="text-muted-foreground">|</span>
+          <span>District</span>
         </h1>
       </div>
 
