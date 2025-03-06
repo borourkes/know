@@ -49,9 +49,10 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         },
       }),
     ],
-    content,
+    content: content ? JSON.parse(content) : '',
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      // Store as JSON instead of HTML
+      onChange(JSON.stringify(editor.getJSON()));
     },
   });
 
@@ -82,12 +83,13 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
-          editor.chain().focus().insertContent(`
-            <video controls class="w-full rounded-lg">
+          editor.chain().focus().insertContent({
+            type: 'raw',
+            content: `<video controls class="w-full rounded-lg">
               <source src="${e.target.result}" type="${file.type}">
               Your browser does not support the video tag.
-            </video>
-          `).run();
+            </video>`
+          }).run();
         }
       };
       reader.readAsDataURL(file);
@@ -112,12 +114,13 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
-          editor.chain().focus().insertContent(`
-            <video controls class="w-full rounded-lg">
+          editor.chain().focus().insertContent({
+            type: 'raw',
+            content: `<video controls class="w-full rounded-lg">
               <source src="${e.target.result}" type="${file.type}">
               Your browser does not support the video tag.
-            </video>
-          `).run();
+            </video>`
+          }).run();
         }
       };
       reader.readAsDataURL(file);
