@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "wouter";
-import { Search, FileText, FolderOpen, Plus, FolderPlus } from "lucide-react";
+import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CategoryDialog } from "./category-dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 type SidebarNavProps = {
   onSearch: () => void;
@@ -17,6 +18,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   const [location] = useLocation();
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
+  const { logoutMutation } = useAuth();
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ['/api/categories']
@@ -44,7 +46,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   };
 
   return (
-    <div className="min-h-screen w-64 bg-sidebar border-r border-border">
+    <div className="min-h-screen w-64 bg-sidebar border-r border-border flex flex-col">
       <div className="p-6">
         <h1 className="text-2xl font-semibold text-sidebar-foreground flex items-center gap-2">
           <span className="text-primary">know</span>
@@ -88,7 +90,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
 
       <Separator className="my-4" />
 
-      <ScrollArea className="h-[calc(100vh-200px)]">
+      <ScrollArea className="flex-1">
         <div className="px-4 py-2">
           <h2 className="mb-2 text-lg font-semibold tracking-tight">
             All Documents
@@ -136,6 +138,18 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           </div>
         </div>
       </ScrollArea>
+
+      <div className="p-4 mt-auto">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-muted-foreground hover:text-sidebar-foreground"
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          {logoutMutation.isPending ? "Logging out..." : "Logout"}
+        </Button>
+      </div>
 
       <CategoryDialog 
         open={categoryDialogOpen}
