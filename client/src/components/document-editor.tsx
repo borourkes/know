@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +25,8 @@ type DocumentEditorProps = {
 export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const [_, setLocation] = useLocation();
+
   const [doc, setDoc] = useState<Partial<Document>>(initialDoc || {
     title: "",
     content: "",
@@ -37,6 +39,10 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
 
   const { mutate: saveDocument, isPending: isSaving } = useMutation({
     mutationFn: async () => {
+      if (!doc.title || !doc.content) {
+        throw new Error("Please fill in all required fields");
+      }
+
       if (documentId) {
         const res = await apiRequest("PATCH", `/api/documents/${documentId}`, doc);
         return res.json();
@@ -45,17 +51,20 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
         return res.json();
       }
     },
-    onSuccess: () => {
+    onSuccess: (savedDoc) => {
       queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
       toast({
         title: "Success",
         description: "Document saved successfully",
       });
+      if (!documentId) {
+        setLocation(`/document/${savedDoc.id}`);
+      }
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to save document",
+        description: error instanceof Error ? error.message : "Failed to save document",
         variant: "destructive"
       });
     }
@@ -63,6 +72,9 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
 
   const { mutate: getAiSuggestions, isPending: isGettingSuggestions } = useMutation({
     mutationFn: async (content: string) => {
+      if (!content.trim()) {
+        throw new Error("Please add some content first");
+      }
       const res = await apiRequest("POST", "/api/ai/suggest", { content });
       return res.json();
     },
@@ -74,7 +86,7 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
             <div>
               <strong>Improvements:</strong>
               <ul className="list-disc pl-4">
-                {data.improvements.map((imp, i) => (
+                {data.improvements.map((imp: string, i: number) => (
                   <li key={i}>{imp}</li>
                 ))}
               </ul>
@@ -82,7 +94,7 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
             <div>
               <strong>Formatting:</strong>
               <ul className="list-disc pl-4">
-                {data.formatting.map((fmt, i) => (
+                {data.formatting.map((fmt: string, i: number) => (
                   <li key={i}>{fmt}</li>
                 ))}
               </ul>
@@ -90,13 +102,20 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
             <div>
               <strong>Expansion Ideas:</strong>
               <ul className="list-disc pl-4">
-                {data.expansion.map((exp, i) => (
+                {data.expansion.map((exp: string, i: number) => (
                   <li key={i}>{exp}</li>
                 ))}
               </ul>
             </div>
           </div>
         )
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to get AI suggestions",
+        variant: "destructive"
       });
     }
   });
@@ -110,7 +129,7 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
           onChange={(e) => setDoc({ ...doc, title: e.target.value })}
           className="text-2xl font-bold mb-4"
         />
-        
+
         <Select
           value={doc.categoryId?.toString()}
           onValueChange={(value) => 
@@ -118,7 +137,7 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select Category" />
+            <SelectValue placeholder="Select Category (Optional)" />
           </SelectTrigger>
           <SelectContent>
             {categories?.map((category) => (

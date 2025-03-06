@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "wouter";
-import { Search, FileText, FolderOpen, Plus } from "lucide-react";
+import { Search, FileText, FolderOpen, Plus, FolderPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@shared/schema";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { CategoryDialog } from "./category-dialog";
 
 type SidebarNavProps = {
   onSearch: () => void;
@@ -13,7 +15,8 @@ type SidebarNavProps = {
 
 export function SidebarNav({ onSearch }: SidebarNavProps) {
   const [location] = useLocation();
-  
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+
   const { data: categories } = useQuery<Category[]>({
     queryKey: ['/api/categories']
   });
@@ -25,7 +28,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           Know | District
         </h1>
       </div>
-      
+
       <div className="px-4 mb-4 space-y-2">
         <Button 
           variant="outline" 
@@ -35,7 +38,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           <Search className="mr-2 h-4 w-4" />
           Search
         </Button>
-        
+
         <Link href="/document/new">
           <Button 
             variant="outline" 
@@ -45,10 +48,19 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
             New Document
           </Button>
         </Link>
+
+        <Button 
+          variant="outline" 
+          className="w-full justify-start"
+          onClick={() => setCategoryDialogOpen(true)}
+        >
+          <FolderPlus className="mr-2 h-4 w-4" />
+          New Category
+        </Button>
       </div>
 
       <Separator className="my-4" />
-      
+
       <ScrollArea className="h-[calc(100vh-200px)]">
         <div className="px-4 py-2">
           <h2 className="mb-2 text-lg font-semibold tracking-tight">
@@ -69,7 +81,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
             </Link>
           </div>
         </div>
-        
+
         <div className="px-4 py-2">
           <h2 className="mb-2 text-lg font-semibold tracking-tight">
             Categories
@@ -96,6 +108,11 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           </div>
         </div>
       </ScrollArea>
+
+      <CategoryDialog 
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+      />
     </div>
   );
 }
