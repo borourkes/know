@@ -74,7 +74,8 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
 
   const { mutate: updateCategory, isPending: isUpdating } = useMutation({
     mutationFn: async () => {
-      if (!editingCategory) return;
+      if (!editingCategory) throw new Error("No category selected for update");
+
       const res = await apiRequest("PATCH", `/api/categories/${editingCategory.id}`, category);
       if (!res.ok) {
         const error = await res.json();
@@ -101,7 +102,8 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
 
   const { mutate: deleteCategory, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      if (!editingCategory) return;
+      if (!editingCategory) throw new Error("No category selected for deletion");
+
       const res = await apiRequest("DELETE", `/api/categories/${editingCategory.id}`);
       if (!res.ok) {
         const error = await res.json();
