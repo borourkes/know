@@ -1,13 +1,21 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { getContentSuggestions } from "./openai";
+import { getContentSuggestions, chatWithAI } from "./openai";
 import { 
   insertCategorySchema, 
   insertDocumentSchema, 
   documentSearchSchema,
   aiSuggestSchema
 } from "@shared/schema";
+import { z } from "zod";
+
+const chatSchema = z.object({
+  messages: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string()
+  }))
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Categories
@@ -62,7 +70,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const document = await storage.updateDocument(Number(req.params.id), result.data);
       res.json(document);
     } catch (error) {
-      res.status(404).json({ message: error.message });
+      const err = error as Error;
+      res.status(404).json({ message: err.message });
     }
   });
 
@@ -86,7 +95,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const suggestions = await getContentSuggestions(result.data.content);
       res.json(suggestions);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      const err = error as Error;
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/ai/chat", async (req, res) => {
+    const result = chatSchema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ message: "Invalid chat messages" });
+      return;
+    }
+    try {
+      const response = await chatWithAI(result.data.messages);
+      res.json({ message: response });
+    } catch (error) {
+      const err = error as Error;
+      res.status(500).json({ message: err.message });
     }
   });
 

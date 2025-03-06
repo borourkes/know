@@ -26,8 +26,29 @@ export async function getContentSuggestions(content: string): Promise<{
       response_format: { type: "json_object" }
     });
 
-    return JSON.parse(response.choices[0].message.content);
+    return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error) {
-    throw new Error("Failed to get AI suggestions: " + error.message);
+    const err = error as Error;
+    throw new Error("Failed to get AI suggestions: " + err.message);
+  }
+}
+
+export async function chatWithAI(messages: Array<{ role: 'user' | 'assistant' | 'system', content: string }>): Promise<string> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful writing assistant that can help with content creation, templates, and writing suggestions. Be concise and practical in your responses."
+        },
+        ...messages
+      ]
+    });
+
+    return response.choices[0].message.content || "";
+  } catch (error) {
+    const err = error as Error;
+    throw new Error("Failed to chat with AI: " + err.message);
   }
 }

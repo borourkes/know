@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Category, Document } from "@shared/schema";
 import { Loader2, X } from "lucide-react";
+import { AIChat } from "./ai-chat";
 
 type DocumentEditorProps = {
   documentId?: number;
@@ -34,6 +35,7 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
   const queryClient = useQueryClient();
   const [_, setLocation] = useLocation();
   const [suggestions, setSuggestions] = useState<AISuggestions | null>(null);
+  const [showChat, setShowChat] = useState(false);
 
   const [doc, setDoc] = useState<Partial<Document>>(initialDoc || {
     title: "",
@@ -90,9 +92,10 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
     },
     onSuccess: (data) => {
       setSuggestions(data);
+      setShowChat(true);
       toast({
         title: "AI Suggestions Ready",
-        description: "Scroll down to view the suggestions for your document.",
+        description: "Scroll down to view the suggestions and chat with AI for more help.",
       });
     },
     onError: (error) => {
@@ -175,7 +178,10 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSuggestions(null)}
+              onClick={() => {
+                setSuggestions(null);
+                setShowChat(false);
+              }}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -208,6 +214,8 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
           </CardContent>
         </Card>
       )}
+
+      {showChat && <AIChat />}
     </div>
   );
 }
