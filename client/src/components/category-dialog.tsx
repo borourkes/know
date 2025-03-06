@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,9 +29,21 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
   const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [category, setCategory] = useState({
-    name: editingCategory?.name || "",
-    description: editingCategory?.description || ""
+    name: "",
+    description: ""
   });
+
+  // Update form when editingCategory changes
+  useEffect(() => {
+    if (editingCategory) {
+      setCategory({
+        name: editingCategory.name,
+        description: editingCategory.description
+      });
+    } else {
+      setCategory({ name: "", description: "" });
+    }
+  }, [editingCategory]);
 
   const { mutate: createCategory, isPending: isCreating } = useMutation({
     mutationFn: async () => {
