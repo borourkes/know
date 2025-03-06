@@ -1,4 +1,11 @@
 import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import TextStyle from '@tiptap/extension-text-style';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
+import Youtube from '@tiptap/extension-youtube';
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -17,7 +24,6 @@ import {
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
-import { editorConfig, parseContent } from "@/lib/editor";
 
 type RichTextEditorProps = {
   content: string;
@@ -27,10 +33,25 @@ type RichTextEditorProps = {
 
 export function RichTextEditor({ content, onChange, className }: RichTextEditorProps) {
   const editor = useEditor({
-    ...editorConfig,
-    content: parseContent(content),
+    extensions: [
+      StarterKit,
+      Image,
+      Link,
+      TextStyle,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Underline,
+      Youtube.configure({
+        inline: false,
+        HTMLAttributes: {
+          class: 'w-full aspect-video rounded-lg',
+        },
+      }),
+    ],
+    content,
     onUpdate: ({ editor }) => {
-      onChange(JSON.stringify(editor.getJSON()));
+      onChange(editor.getHTML());
     },
   });
 
@@ -44,6 +65,7 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       active && "bg-muted text-muted-foreground"
     );
 
+  // Handle file selection for images and videos
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -60,25 +82,19 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
-          editor.chain().focus().insertContent([{
-            type: 'paragraph',
-            content: [{
-              type: 'text',
-              text: ' '
-            }]
-          }, {
-            type: 'youtube',
-            attrs: {
-              src: e.target.result,
-              class: 'w-full aspect-video rounded-lg',
-            }
-          }]).run();
+          editor.chain().focus().insertContent(`
+            <video controls class="w-full rounded-lg">
+              <source src="${e.target.result}" type="${file.type}">
+              Your browser does not support the video tag.
+            </video>
+          `).run();
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
+  // Handle drag and drop for files
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
@@ -96,25 +112,19 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
-          editor.chain().focus().insertContent([{
-            type: 'paragraph',
-            content: [{
-              type: 'text',
-              text: ' '
-            }]
-          }, {
-            type: 'youtube',
-            attrs: {
-              src: e.target.result,
-              class: 'w-full aspect-video rounded-lg',
-            }
-          }]).run();
+          editor.chain().focus().insertContent(`
+            <video controls class="w-full rounded-lg">
+              <source src="${e.target.result}" type="${file.type}">
+              Your browser does not support the video tag.
+            </video>
+          `).run();
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
+  // Handle YouTube URL input
   const handleYoutubeInput = () => {
     const url = window.prompt('Enter YouTube URL');
     if (url) {
@@ -215,8 +225,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         <div className="w-px h-6 bg-border mx-1" />
 
         <label htmlFor="image-upload">
-          <Button
-            variant="ghost"
+          <Button 
+            variant="ghost" 
             size="sm"
             className="cursor-pointer"
             asChild
@@ -235,8 +245,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         </label>
 
         <label htmlFor="video-upload">
-          <Button
-            variant="ghost"
+          <Button 
+            variant="ghost" 
             size="sm"
             className="cursor-pointer"
             asChild
@@ -254,8 +264,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
           </Button>
         </label>
 
-        <Button
-          variant="ghost"
+        <Button 
+          variant="ghost" 
           size="sm"
           onClick={handleYoutubeInput}
         >
@@ -264,13 +274,17 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
           </svg>
         </Button>
 
-        <Button
-          variant="ghost"
+        <Button 
+          variant="ghost" 
           size="sm"
           onClick={() => {
             const url = window.prompt('Enter link URL');
             if (url) {
-              editor.chain().focus().setLink({ href: url }).run();
+              editor
+                .chain()
+                .focus()
+                .setLink({ href: url })
+                .run();
             }
           }}
         >
@@ -278,8 +292,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         </Button>
 
         <label htmlFor="file-upload">
-          <Button
-            variant="ghost"
+          <Button 
+            variant="ghost" 
             size="sm"
             className="cursor-pointer"
             asChild
@@ -298,23 +312,7 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
                     editor
                       .chain()
                       .focus()
-                      .insertContent([{
-                        type: 'paragraph',
-                        content: [{
-                          type: 'text',
-                          text: '📎 '
-                        }, {
-                          type: 'text',
-                          marks: [{
-                            type: 'link',
-                            attrs: { href: '#' }
-                          }],
-                          text: fileName
-                        }, {
-                          type: 'text',
-                          text: ` (${fileSize})`
-                        }]
-                      }])
+                      .insertContent(`<p>📎 <a href="#">${fileName}</a> (${fileSize})</p>`)
                       .run();
                   }
                 }}
@@ -324,8 +322,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         </label>
       </div>
 
-      <EditorContent
-        editor={editor}
+      <EditorContent 
+        editor={editor} 
         className="prose prose-sm max-w-none p-4 min-h-[400px] focus:outline-none"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
