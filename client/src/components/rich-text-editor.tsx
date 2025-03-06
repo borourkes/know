@@ -5,6 +5,7 @@ import Link from '@tiptap/extension-link';
 import TextStyle from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
+import Youtube from '@tiptap/extension-youtube';
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -18,7 +19,8 @@ import {
   FileText,
   List,
   ListOrdered,
-  Quote
+  Quote,
+  Video
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
@@ -40,6 +42,12 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         types: ['heading', 'paragraph'],
       }),
       Underline,
+      Youtube.configure({
+        inline: false,
+        HTMLAttributes: {
+          class: 'w-full aspect-video rounded-lg',
+        },
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -57,25 +65,42 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       active && "bg-muted text-muted-foreground"
     );
 
-  // Handle file selection for images
-  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle file selection for images and videos
+  const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    if (type === 'image' && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
           editor.chain().focus().setImage({ src: e.target.result }).run();
+        }
+      };
+      reader.readAsDataURL(file);
+    } else if (type === 'video' && file.type.startsWith('video/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (typeof e.target?.result === 'string') {
+          editor.chain().focus().insertContent(`
+            <video controls class="w-full rounded-lg">
+              <source src="${e.target.result}" type="${file.type}">
+              Your browser does not support the video tag.
+            </video>
+          `).run();
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Handle drag and drop for images
+  // Handle drag and drop for files
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (!file) return;
+
+    if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
@@ -83,6 +108,29 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         }
       };
       reader.readAsDataURL(file);
+    } else if (file.type.startsWith('video/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (typeof e.target?.result === 'string') {
+          editor.chain().focus().insertContent(`
+            <video controls class="w-full rounded-lg">
+              <source src="${e.target.result}" type="${file.type}">
+              Your browser does not support the video tag.
+            </video>
+          `).run();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle YouTube URL input
+  const handleYoutubeInput = () => {
+    const url = window.prompt('Enter YouTube URL');
+    if (url) {
+      editor.commands.setYoutubeVideo({
+        src: url,
+      });
     }
   };
 
@@ -190,11 +238,41 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleImageSelection}
+                onChange={(e) => handleFileSelection(e, 'image')}
               />
             </div>
           </Button>
         </label>
+
+        <label htmlFor="video-upload">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="cursor-pointer"
+            asChild
+          >
+            <div>
+              <Video className="h-4 w-4" />
+              <input
+                id="video-upload"
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => handleFileSelection(e, 'video')}
+              />
+            </div>
+          </Button>
+        </label>
+
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={handleYoutubeInput}
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </Button>
 
         <Button 
           variant="ghost" 
@@ -229,7 +307,6 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    // Create a link to the file
                     const fileName = file.name;
                     const fileSize = (file.size / 1024).toFixed(2) + ' KB';
                     editor
