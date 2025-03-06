@@ -12,6 +12,12 @@ type SearchDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
+function stripHtml(html: string) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
+
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [query, setQuery] = useState("");
   const [_, setLocation] = useLocation();
@@ -53,7 +59,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               >
                 <h3 className="font-medium">{doc.title}</h3>
                 <p className="text-sm text-muted-foreground truncate">
-                  {doc.content}
+                  {stripHtml(doc.content)}
                 </p>
               </div>
             ))}

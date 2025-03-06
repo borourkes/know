@@ -5,6 +5,12 @@ import { Document } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 
+function stripHtml(html: string) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
+
 export default function Home() {
   const { data: documents, isLoading } = useQuery<Document[]>({
     queryKey: ['/api/documents']
@@ -46,7 +52,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground line-clamp-3">
-                  {doc.content}
+                  {stripHtml(doc.content)}
                 </p>
               </CardContent>
             </Card>
