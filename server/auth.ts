@@ -9,7 +9,6 @@ import { User as SelectUser } from "@shared/schema";
 import { z } from "zod";
 import express from 'express';
 
-
 declare global {
   namespace Express {
     interface User extends SelectUser {}
@@ -32,7 +31,7 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Add JSON parsing middleware
+  // Add JSON parsing middleware FIRST
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -78,6 +77,8 @@ export function setupAuth(app: Express) {
 
   // Auth routes
   app.post("/api/register", async (req, res) => {
+    console.log('Register request body:', req.body); // Debug log
+
     try {
       // Validate request body
       if (!req.body || typeof req.body !== 'object') {
@@ -109,14 +110,8 @@ export function setupAuth(app: Express) {
         res.status(201).json(safeUser);
       });
     } catch (err: any) {
-      // Handle known errors
-      if (err.code === '23505') { // PostgreSQL unique constraint violation
-        res.status(400).json({ error: "Username already exists" });
-      } else {
-        // Log the error for debugging but send a safe response
-        console.error('Registration error:', err);
-        res.status(500).json({ error: "Registration failed. Please try again." });
-      }
+      console.error('Registration error:', err); // Debug log
+      res.status(500).json({ error: "Registration failed. Please try again." });
     }
   });
 
@@ -153,5 +148,11 @@ export function setupAuth(app: Express) {
     }
     const { password, ...safeUser } = req.user!;
     res.json(safeUser);
+  });
+
+  // Error handling middleware must be last
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error('Global error handler:', err);
+    res.status(500).json({ error: "An unexpected error occurred" });
   });
 }
