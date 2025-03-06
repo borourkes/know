@@ -58,12 +58,12 @@ export default function AuthPage() {
 
   const { mutate: register, isPending: isRegistering } = useMutation({
     mutationFn: async (data: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", data);
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(resData.error || "Registration failed");
+      try {
+        const res = await apiRequest("POST", "/api/register", data);
+        return await res.json();
+      } catch (error: any) {
+        throw new Error(error.message || "Registration failed");
       }
-      return resData;
     },
     onSuccess: () => {
       setLocation("/");
