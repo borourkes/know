@@ -1,71 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMutation } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
 export default function AuthPage() {
   const [_, setLocation] = useLocation();
-  const { toast } = useToast();
+  const { loginMutation, registerMutation, user, isLoading } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
 
-  const { mutate: login, isPending: isLoggingIn } = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/login", formData);
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Login failed");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
       setLocation("/");
-      toast({
-        title: "Success",
-        description: "Logged in successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Login failed",
-        variant: "destructive"
-      });
     }
-  });
+  }, [user, setLocation]);
 
-  const { mutate: register, isPending: isRegistering } = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/register", formData);
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Registration failed");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      setLocation("/");
-      toast({
-        title: "Success",
-        description: "Registered and logged in successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Registration failed",
-        variant: "destructive"
-      });
-    }
-  });
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-border" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -111,10 +74,10 @@ export default function AuthPage() {
                   />
                   <Button 
                     className="w-full" 
-                    onClick={() => login()}
-                    disabled={isLoggingIn || !formData.username || !formData.password}
+                    onClick={() => loginMutation.mutate(formData)}
+                    disabled={loginMutation.isPending || !formData.username || !formData.password}
                   >
-                    {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Login
                   </Button>
                 </div>
@@ -139,10 +102,10 @@ export default function AuthPage() {
                   />
                   <Button 
                     className="w-full"
-                    onClick={() => register()}
-                    disabled={isRegistering || !formData.username || !formData.password}
+                    onClick={() => registerMutation.mutate(formData)}
+                    disabled={registerMutation.isPending || !formData.username || !formData.password}
                   >
-                    {isRegistering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Register
                   </Button>
                 </div>
