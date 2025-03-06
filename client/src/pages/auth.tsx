@@ -38,15 +38,18 @@ export default function AuthPage() {
   const { mutate: login, isPending: isLoggingIn } = useMutation({
     mutationFn: async (data: LoginData) => {
       const res = await apiRequest("POST", "/api/login", data);
+      if (!res.ok) {
+        throw new Error("Invalid username or password");
+      }
       return res.json();
     },
     onSuccess: () => {
       setLocation("/");
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Login failed",
-        description: "Invalid username or password",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -55,15 +58,19 @@ export default function AuthPage() {
   const { mutate: register, isPending: isRegistering } = useMutation({
     mutationFn: async (data: InsertUser) => {
       const res = await apiRequest("POST", "/api/register", data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Registration failed");
+      }
       return res.json();
     },
     onSuccess: () => {
       setLocation("/");
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Registration failed",
-        description: "Username might already exist",
+        description: error.message,
         variant: "destructive",
       });
     },

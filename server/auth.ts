@@ -89,7 +89,12 @@ export function setupAuth(app: Express) {
         res.status(201).json(safeUser);
       });
     } catch (err) {
-      next(err);
+      // Handle database constraint violation errors
+      if (err.code === '23505') { // PostgreSQL unique constraint violation
+        res.status(400).json({ error: "Username already exists" });
+      } else {
+        next(err);
+      }
     }
   });
 
