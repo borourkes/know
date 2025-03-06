@@ -14,7 +14,7 @@ export default function DocumentPage() {
   const documentId = id === 'new' ? undefined : parseInt(id);
 
   const { data: document, isLoading } = useQuery<Document>({
-    queryKey: documentId ? [`/api/documents/${documentId}`] : null,
+    queryKey: documentId ? ['/api/documents', documentId] : undefined,
     enabled: !!documentId
   });
 
