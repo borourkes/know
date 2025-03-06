@@ -19,10 +19,11 @@ import { Loader2 } from "lucide-react";
 
 type DocumentEditorProps = {
   documentId?: number;
-  initialDoc?: Partial<Document>;
+  initialDoc?: Document;
+  onSaved?: () => void;
 };
 
-export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) {
+export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [_, setLocation] = useLocation();
@@ -57,7 +58,9 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
         title: "Success",
         description: "Document saved successfully",
       });
-      if (!documentId) {
+      if (onSaved) {
+        onSaved();
+      } else if (!documentId) {
         setLocation(`/document/${savedDoc.id}`);
       }
     },
@@ -122,12 +125,12 @@ export function DocumentEditor({ documentId, initialDoc }: DocumentEditorProps) 
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <Input
           placeholder="Document Title"
           value={doc.title}
           onChange={(e) => setDoc({ ...doc, title: e.target.value })}
-          className="text-2xl font-bold mb-4"
+          className="text-2xl font-bold"
         />
 
         <Select
