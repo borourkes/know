@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,6 +21,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { RichTextEditor } from "./rich-text-editor";
 
 type DocumentEditorProps = {
   documentId?: number;
@@ -151,11 +151,10 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
       </div>
 
       <Card>
-        <Textarea
-          placeholder="Start writing your document..."
-          value={doc.content}
-          onChange={(e) => setDoc({ ...doc, content: e.target.value })}
-          className="min-h-[400px] p-4"
+        <RichTextEditor
+          content={doc.content || ''}
+          onChange={(content) => setDoc({ ...doc, content })}
+          className="min-h-[400px]"
         />
       </Card>
 
