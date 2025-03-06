@@ -14,7 +14,7 @@ export default function DocumentPage() {
 
   const { data: document, isLoading } = useQuery<Document>({
     queryKey: ['/api/documents', id],
-    enabled: id !== 'new'
+    enabled: id !== 'new' && !isNaN(parseInt(id))
   });
 
   if (id === 'new') {
