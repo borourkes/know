@@ -1,12 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
-import { editorConfig } from './rich-text-editor';
-import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
-import TextStyle from '@tiptap/extension-text-style';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import Youtube from '@tiptap/extension-youtube';
+import { editorConfig } from '@/lib/editor';
 
 type DocumentViewerProps = {
   content: string;

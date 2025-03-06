@@ -1,11 +1,4 @@
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
-import TextStyle from '@tiptap/extension-text-style';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import Youtube from '@tiptap/extension-youtube';
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -24,33 +17,7 @@ import {
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
-
-// Common editor configuration
-export const editorConfig = {
-  extensions: [
-    StarterKit,
-    Image,
-    Link,
-    TextStyle,
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
-    }),
-    Underline,
-    Youtube.configure({
-      inline: false,
-      HTMLAttributes: {
-        class: 'w-full aspect-video rounded-lg',
-      },
-    }),
-  ],
-  parseContent: (content: string) => {
-    try {
-      return JSON.parse(content);
-    } catch {
-      return content || '';
-    }
-  }
-};
+import { editorConfig } from "@/lib/editor";
 
 type RichTextEditorProps = {
   content: string;
