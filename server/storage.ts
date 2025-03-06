@@ -100,13 +100,13 @@ export class DatabaseStorage implements IStorage {
     }
 
     try {
-      // First try exact phrase matching
+      // First try exact phrase matching with partial word support
       const exactMatches = await db
         .select()
         .from(documents)
         .where(sql`
           to_tsvector('english', title || ' ' || content) @@ 
-          phraseto_tsquery('english', ${searchQuery})
+          websearch_to_tsquery('english', ${searchQuery})
         `)
         .orderBy(desc(documents.lastUpdated));
 
@@ -114,13 +114,15 @@ export class DatabaseStorage implements IStorage {
         return exactMatches;
       }
 
-      // If no exact matches, try fuzzy matching with plainto_tsquery
+      // If no exact matches, try more flexible matching including partial words
       return await db
         .select()
         .from(documents)
         .where(sql`
+          title ILIKE ${'%' + searchQuery + '%'} OR
+          content ILIKE ${'%' + searchQuery + '%'} OR
           to_tsvector('english', title || ' ' || content) @@ 
-          plainto_tsquery('english', ${searchQuery})
+          to_tsquery('english', ${searchQuery + ':*'})
         `)
         .orderBy(desc(documents.lastUpdated));
     } catch (error) {
