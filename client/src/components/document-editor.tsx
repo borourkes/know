@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { 
@@ -15,7 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Category, Document } from "@shared/schema";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 type DocumentEditorProps = {
   documentId?: number;
@@ -23,10 +23,17 @@ type DocumentEditorProps = {
   onSaved?: () => void;
 };
 
+type AISuggestions = {
+  improvements: string[];
+  formatting: string[];
+  expansion: string[];
+};
+
 export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [_, setLocation] = useLocation();
+  const [suggestions, setSuggestions] = useState<AISuggestions | null>(null);
 
   const [doc, setDoc] = useState<Partial<Document>>(initialDoc || {
     title: "",
@@ -82,36 +89,10 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
       return res.json();
     },
     onSuccess: (data) => {
+      setSuggestions(data);
       toast({
-        title: "AI Suggestions",
-        description: (
-          <div className="mt-2 space-y-2">
-            <div>
-              <strong>Improvements:</strong>
-              <ul className="list-disc pl-4">
-                {data.improvements.map((imp: string, i: number) => (
-                  <li key={i}>{imp}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <strong>Formatting:</strong>
-              <ul className="list-disc pl-4">
-                {data.formatting.map((fmt: string, i: number) => (
-                  <li key={i}>{fmt}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <strong>Expansion Ideas:</strong>
-              <ul className="list-disc pl-4">
-                {data.expansion.map((exp: string, i: number) => (
-                  <li key={i}>{exp}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )
+        title: "AI Suggestions Ready",
+        description: "Scroll down to view the suggestions for your document.",
       });
     },
     onError: (error) => {
@@ -124,8 +105,8 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
   });
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6 space-y-4">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="space-y-4">
         <Input
           placeholder="Document Title"
           value={doc.title}
@@ -155,7 +136,7 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
         </Select>
       </div>
 
-      <Card className="mb-6">
+      <Card>
         <Textarea
           placeholder="Start writing your document..."
           value={doc.content}
@@ -186,6 +167,47 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
           Save Document
         </Button>
       </div>
+
+      {suggestions && (
+        <Card className="mt-8">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xl font-bold">AI Suggestions</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSuggestions(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <h3 className="font-semibold mb-2">Suggested Improvements</h3>
+              <ul className="list-disc pl-4 space-y-1">
+                {suggestions.improvements.map((imp, i) => (
+                  <li key={i} className="text-muted-foreground">{imp}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Formatting Suggestions</h3>
+              <ul className="list-disc pl-4 space-y-1">
+                {suggestions.formatting.map((fmt, i) => (
+                  <li key={i} className="text-muted-foreground">{fmt}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Content Expansion Ideas</h3>
+              <ul className="list-disc pl-4 space-y-1">
+                {suggestions.expansion.map((exp, i) => (
+                  <li key={i} className="text-muted-foreground">{exp}</li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
