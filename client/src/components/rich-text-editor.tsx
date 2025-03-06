@@ -83,13 +83,40 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
-          editor.chain().focus().insertContent({
-            type: 'raw',
-            content: `<video controls class="w-full rounded-lg">
-              <source src="${e.target.result}" type="${file.type}">
-              Your browser does not support the video tag.
-            </video>`
-          }).run();
+          editor.chain().focus().insertContent([{
+            type: 'paragraph',
+            content: [{
+              type: 'text',
+              text: ' '
+            }]
+          }, {
+            type: 'paragraph',
+            content: [{
+              type: 'text',
+              marks: [{
+                type: 'textStyle',
+                attrs: { class: 'w-full aspect-video rounded-lg' }
+              }],
+              text: `[Video: ${file.name}]`
+            }]
+          }]).run();
+
+          // Insert an actual video element after the placeholder
+          const video = document.createElement('video');
+          video.src = e.target.result;
+          video.controls = true;
+          video.className = 'w-full aspect-video rounded-lg';
+          const selection = editor.view.state.selection;
+          const pos = selection.$to.pos;
+          editor.view.dispatch(
+            editor.view.state.tr.insert(
+              pos,
+              editor.schema.nodes.paragraph.create(
+                null,
+                editor.schema.text(video.outerHTML)
+              )
+            )
+          );
         }
       };
       reader.readAsDataURL(file);
@@ -114,13 +141,40 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       const reader = new FileReader();
       reader.onload = (e) => {
         if (typeof e.target?.result === 'string') {
-          editor.chain().focus().insertContent({
-            type: 'raw',
-            content: `<video controls class="w-full rounded-lg">
-              <source src="${e.target.result}" type="${file.type}">
-              Your browser does not support the video tag.
-            </video>`
-          }).run();
+          editor.chain().focus().insertContent([{
+            type: 'paragraph',
+            content: [{
+              type: 'text',
+              text: ' '
+            }]
+          }, {
+            type: 'paragraph',
+            content: [{
+              type: 'text',
+              marks: [{
+                type: 'textStyle',
+                attrs: { class: 'w-full aspect-video rounded-lg' }
+              }],
+              text: `[Video: ${file.name}]`
+            }]
+          }]).run();
+
+          // Insert an actual video element after the placeholder
+          const video = document.createElement('video');
+          video.src = e.target.result;
+          video.controls = true;
+          video.className = 'w-full aspect-video rounded-lg';
+          const selection = editor.view.state.selection;
+          const pos = selection.$to.pos;
+          editor.view.dispatch(
+            editor.view.state.tr.insert(
+              pos,
+              editor.schema.nodes.paragraph.create(
+                null,
+                editor.schema.text(video.outerHTML)
+              )
+            )
+          );
         }
       };
       reader.readAsDataURL(file);
@@ -283,11 +337,7 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
           onClick={() => {
             const url = window.prompt('Enter link URL');
             if (url) {
-              editor
-                .chain()
-                .focus()
-                .setLink({ href: url })
-                .run();
+              editor.chain().focus().setLink({ href: url }).run();
             }
           }}
         >
@@ -315,7 +365,23 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
                     editor
                       .chain()
                       .focus()
-                      .insertContent(`<p>📎 <a href="#">${fileName}</a> (${fileSize})</p>`)
+                      .insertContent([{
+                        type: 'paragraph',
+                        content: [{
+                          type: 'text',
+                          text: '📎 '
+                        }, {
+                          type: 'text',
+                          marks: [{
+                            type: 'link',
+                            attrs: { href: '#' }
+                          }],
+                          text: fileName
+                        }, {
+                          type: 'text',
+                          text: ` (${fileSize})`
+                        }]
+                      }])
                       .run();
                   }
                 }}
