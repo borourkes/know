@@ -34,6 +34,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(category);
   });
 
+  app.patch("/api/categories/:id", async (req, res) => {
+    const result = insertCategorySchema.partial().safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ message: "Invalid category data" });
+      return;
+    }
+    try {
+      const category = await storage.updateCategory(Number(req.params.id), result.data);
+      res.json(category);
+    } catch (error) {
+      const err = error as Error;
+      res.status(404).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      await storage.deleteCategory(Number(req.params.id));
+      res.json({ message: "Category deleted successfully" });
+    } catch (error) {
+      const err = error as Error;
+      res.status(404).json({ message: err.message });
+    }
+  });
+
   // Documents
   app.get("/api/documents", async (req, res) => {
     const categoryId = req.query.categoryId ? Number(req.query.categoryId) : undefined;
@@ -69,6 +94,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const document = await storage.updateDocument(Number(req.params.id), result.data);
       res.json(document);
+    } catch (error) {
+      const err = error as Error;
+      res.status(404).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/documents/:id", async (req, res) => {
+    try {
+      await storage.deleteDocument(Number(req.params.id));
+      res.json({ message: "Document deleted successfully" });
     } catch (error) {
       const err = error as Error;
       res.status(404).json({ message: err.message });

@@ -14,12 +14,15 @@ export interface IStorage {
   getCategories(): Promise<Category[]>;
   getCategory(id: number): Promise<Category | undefined>;
   createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category>;
+  deleteCategory(id: number): Promise<void>;
 
   // Documents
   getDocuments(categoryId?: number): Promise<Document[]>;
   getDocument(id: number): Promise<Document | undefined>;
   createDocument(doc: InsertDocument): Promise<Document>;
   updateDocument(id: number, doc: Partial<InsertDocument>): Promise<Document>;
+  deleteDocument(id: number): Promise<void>;
   searchDocuments(query: string): Promise<Document[]>;
 }
 
@@ -42,6 +45,31 @@ export class DatabaseStorage implements IStorage {
       .values(cat)
       .returning();
     return category;
+  }
+
+  async updateCategory(id: number, cat: Partial<InsertCategory>): Promise<Category> {
+    const [category] = await db
+      .update(categories)
+      .set(cat)
+      .where(eq(categories.id, id))
+      .returning();
+
+    if (!category) {
+      throw new Error('Category not found');
+    }
+
+    return category;
+  }
+
+  async deleteCategory(id: number): Promise<void> {
+    const [category] = await db
+      .delete(categories)
+      .where(eq(categories.id, id))
+      .returning();
+
+    if (!category) {
+      throw new Error('Category not found');
+    }
   }
 
   async getDocuments(categoryId?: number): Promise<Document[]> {
@@ -91,6 +119,17 @@ export class DatabaseStorage implements IStorage {
     }
 
     return document;
+  }
+
+  async deleteDocument(id: number): Promise<void> {
+    const [document] = await db
+      .delete(documents)
+      .where(eq(documents.id, id))
+      .returning();
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
   }
 
   async searchDocuments(query: string): Promise<Document[]> {
