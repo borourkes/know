@@ -33,7 +33,7 @@ export default function Home() {
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">Recent Documents</h1>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {documents?.map((doc) => (
           <Link key={doc.id} href={`/document/${doc.id}`}>
@@ -41,7 +41,7 @@ export default function Home() {
               <CardHeader>
                 <CardTitle>{doc.title}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Last updated {formatDistanceToNow(new Date(doc.lastUpdated))} ago
+                  Last updated {doc.lastUpdated ? formatDistanceToNow(new Date(doc.lastUpdated)) : 'Never'} ago
                 </p>
               </CardHeader>
               <CardContent>

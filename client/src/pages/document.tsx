@@ -51,7 +51,7 @@ export default function DocumentPage() {
       <div className="mb-4">
         <h1 className="text-3xl font-bold">{document.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Last updated {formatDistanceToNow(new Date(document.lastUpdated))} ago
+          Last updated {document.lastUpdated ? formatDistanceToNow(new Date(document.lastUpdated)) : 'Never'} ago
         </p>
       </div>
       <Card>
