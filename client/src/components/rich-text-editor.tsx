@@ -49,7 +49,15 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         },
       }),
     ],
-    content: content ? JSON.parse(content) : '',
+    content: (() => {
+      try {
+        // Try parsing as JSON first
+        return JSON.parse(content);
+      } catch {
+        // If parsing fails, treat as HTML content
+        return content || '';
+      }
+    })(),
     onUpdate: ({ editor }) => {
       // Store as JSON instead of HTML
       onChange(JSON.stringify(editor.getJSON()));
