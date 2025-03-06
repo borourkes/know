@@ -25,6 +25,33 @@ import {
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
 
+// Common editor configuration
+export const editorConfig = {
+  extensions: [
+    StarterKit,
+    Image,
+    Link,
+    TextStyle,
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    }),
+    Underline,
+    Youtube.configure({
+      inline: false,
+      HTMLAttributes: {
+        class: 'w-full aspect-video rounded-lg',
+      },
+    }),
+  ],
+  parseContent: (content: string) => {
+    try {
+      return JSON.parse(content);
+    } catch {
+      return content || '';
+    }
+  }
+};
+
 type RichTextEditorProps = {
   content: string;
   onChange: (content: string) => void;
@@ -33,33 +60,9 @@ type RichTextEditorProps = {
 
 export function RichTextEditor({ content, onChange, className }: RichTextEditorProps) {
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Link,
-      TextStyle,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Underline,
-      Youtube.configure({
-        inline: false,
-        HTMLAttributes: {
-          class: 'w-full aspect-video rounded-lg',
-        },
-      }),
-    ],
-    content: (() => {
-      try {
-        // Try parsing as JSON first
-        return JSON.parse(content);
-      } catch {
-        // If parsing fails, treat as HTML content
-        return content || '';
-      }
-    })(),
+    ...editorConfig,
+    content: editorConfig.parseContent(content),
     onUpdate: ({ editor }) => {
-      // Store as JSON instead of HTML
       onChange(JSON.stringify(editor.getJSON()));
     },
   });
@@ -74,7 +77,6 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       active && "bg-muted text-muted-foreground"
     );
 
-  // Handle file selection for images and videos
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -109,7 +111,6 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
             }]
           }]).run();
 
-          // Insert an actual video element after the placeholder
           const video = document.createElement('video');
           video.src = e.target.result;
           video.controls = true;
@@ -131,7 +132,6 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
     }
   };
 
-  // Handle drag and drop for files
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
@@ -167,7 +167,6 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
             }]
           }]).run();
 
-          // Insert an actual video element after the placeholder
           const video = document.createElement('video');
           video.src = e.target.result;
           video.controls = true;
@@ -189,7 +188,6 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
     }
   };
 
-  // Handle YouTube URL input
   const handleYoutubeInput = () => {
     const url = window.prompt('Enter YouTube URL');
     if (url) {
@@ -290,8 +288,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         <div className="w-px h-6 bg-border mx-1" />
 
         <label htmlFor="image-upload">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             className="cursor-pointer"
             asChild
@@ -310,8 +308,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         </label>
 
         <label htmlFor="video-upload">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             className="cursor-pointer"
             asChild
@@ -329,8 +327,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
           </Button>
         </label>
 
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           onClick={handleYoutubeInput}
         >
@@ -339,8 +337,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
           </svg>
         </Button>
 
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           onClick={() => {
             const url = window.prompt('Enter link URL');
@@ -353,8 +351,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         </Button>
 
         <label htmlFor="file-upload">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             className="cursor-pointer"
             asChild
@@ -399,8 +397,8 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
         </label>
       </div>
 
-      <EditorContent 
-        editor={editor} 
+      <EditorContent
+        editor={editor}
         className="prose prose-sm max-w-none p-4 min-h-[400px] focus:outline-none"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}

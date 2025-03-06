@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
+import { editorConfig } from './rich-text-editor';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -14,31 +15,8 @@ type DocumentViewerProps = {
 
 export function DocumentViewer({ content, className }: DocumentViewerProps) {
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Link,
-      TextStyle,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Underline,
-      Youtube.configure({
-        inline: false,
-        HTMLAttributes: {
-          class: 'w-full aspect-video rounded-lg',
-        },
-      }),
-    ],
-    content: (() => {
-      try {
-        // Try parsing as JSON first
-        return JSON.parse(content);
-      } catch {
-        // If parsing fails, treat as HTML content
-        return content || '';
-      }
-    })(),
+    ...editorConfig,
+    content: editorConfig.parseContent(content),
     editable: false,
   });
 
