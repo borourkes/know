@@ -13,14 +13,28 @@ type Message = {
   content: string;
 };
 
-export function AIChat() {
+type AIContextProps = {
+  title: string;
+  content: string;
+};
+
+type AIChatProps = {
+  context: AIContextProps;
+};
+
+export function AIChat({ context }: AIChatProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async (content: string) => {
+      const systemMessage = context.title || context.content
+        ? `You are assisting with a document titled "${context.title}". Current content: "${context.content}"`
+        : "You are a helpful writing assistant";
+
       const newMessages = [
+        { role: 'system' as const, content: systemMessage },
         ...messages,
         { role: 'user' as const, content }
       ];

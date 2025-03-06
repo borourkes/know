@@ -252,7 +252,12 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
             </CardHeader>
             <CollapsibleContent>
               <CardContent>
-                <AIChat />
+                <AIChat 
+                  context={{
+                    title: doc.title || '',
+                    content: doc.content || ''
+                  }}
+                />
               </CardContent>
             </CollapsibleContent>
           </Card>
