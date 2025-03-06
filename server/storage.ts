@@ -2,15 +2,19 @@ import {
   type Category, 
   type Document, 
   type InsertCategory, 
-  type InsertDocument 
+  type InsertDocument,
+  categories,
+  documents
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
   getCategories(): Promise<Category[]>;
   getCategory(id: number): Promise<Category | undefined>;
   createCategory(category: InsertCategory): Promise<Category>;
-  
+
   // Documents
   getDocuments(categoryId?: number): Promise<Document[]>;
   getDocument(id: number): Promise<Document | undefined>;
@@ -19,79 +23,86 @@ export interface IStorage {
   searchDocuments(query: string): Promise<Document[]>;
 }
 
-export class MemStorage implements IStorage {
-  private categories: Map<number, Category>;
-  private documents: Map<number, Document>;
-  private categoryId: number;
-  private documentId: number;
-
-  constructor() {
-    this.categories = new Map();
-    this.documents = new Map();
-    this.categoryId = 1;
-    this.documentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values());
+    return await db.select().from(categories);
   }
 
   async getCategory(id: number): Promise<Category | undefined> {
-    return this.categories.get(id);
+    const [category] = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.id, id));
+    return category;
   }
 
   async createCategory(cat: InsertCategory): Promise<Category> {
-    const id = this.categoryId++;
-    const category = { ...cat, id };
-    this.categories.set(id, category);
+    const [category] = await db
+      .insert(categories)
+      .values(cat)
+      .returning();
     return category;
   }
 
   async getDocuments(categoryId?: number): Promise<Document[]> {
-    const docs = Array.from(this.documents.values());
+    let query = db
+      .select()
+      .from(documents)
+      .orderBy(desc(documents.lastUpdated));
+
     if (categoryId) {
-      return docs.filter(d => d.categoryId === categoryId);
+      query = query.where(eq(documents.categoryId, categoryId));
     }
-    return docs;
+
+    return await query;
   }
 
   async getDocument(id: number): Promise<Document | undefined> {
-    return this.documents.get(id);
+    const [document] = await db
+      .select()
+      .from(documents)
+      .where(eq(documents.id, id));
+    return document;
   }
 
   async createDocument(doc: InsertDocument): Promise<Document> {
-    const id = this.documentId++;
-    const document = { 
-      ...doc, 
-      id,
-      lastUpdated: new Date()
-    };
-    this.documents.set(id, document);
+    const [document] = await db
+      .insert(documents)
+      .values({
+        ...doc,
+        lastUpdated: new Date()
+      })
+      .returning();
     return document;
   }
 
   async updateDocument(id: number, doc: Partial<InsertDocument>): Promise<Document> {
-    const existing = await this.getDocument(id);
-    if (!existing) {
+    const [document] = await db
+      .update(documents)
+      .set({
+        ...doc,
+        lastUpdated: new Date()
+      })
+      .where(eq(documents.id, id))
+      .returning();
+
+    if (!document) {
       throw new Error('Document not found');
     }
-    const updated = {
-      ...existing,
-      ...doc,
-      lastUpdated: new Date()
-    };
-    this.documents.set(id, updated);
-    return updated;
+
+    return document;
   }
 
   async searchDocuments(query: string): Promise<Document[]> {
-    const docs = Array.from(this.documents.values());
-    const lowercaseQuery = query.toLowerCase();
-    return docs.filter(doc => 
-      doc.title.toLowerCase().includes(lowercaseQuery) ||
-      doc.content.toLowerCase().includes(lowercaseQuery)
-    );
+    return await db
+      .select()
+      .from(documents)
+      .where(sql`
+        to_tsvector('english', ${documents.title} || ' ' || ${documents.content}) @@ 
+        plainto_tsquery('english', ${query})
+      `)
+      .orderBy(desc(documents.lastUpdated));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
