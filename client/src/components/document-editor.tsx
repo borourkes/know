@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -17,6 +17,12 @@ import { apiRequest } from "@/lib/queryClient";
 import { Category, Document } from "@shared/schema";
 import { Loader2, X } from "lucide-react";
 import { AIChat } from "./ai-chat";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 type DocumentEditorProps = {
   documentId?: number;
@@ -119,7 +125,7 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
 
         <Select
           value={doc.categoryId?.toString()}
-          onValueChange={(value) => 
+          onValueChange={(value) =>
             setDoc({ ...doc, categoryId: parseInt(value) })
           }
         >
@@ -128,8 +134,8 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
           </SelectTrigger>
           <SelectContent>
             {categories?.map((category) => (
-              <SelectItem 
-                key={category.id} 
+              <SelectItem
+                key={category.id}
                 value={category.id.toString()}
               >
                 {category.name}
@@ -160,8 +166,8 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
           Get AI Suggestions
         </Button>
 
-        <Button 
-          onClick={() => saveDocument()} 
+        <Button
+          onClick={() => saveDocument()}
           disabled={isSaving || !doc.title || !doc.content}
         >
           {isSaving && (
@@ -172,50 +178,81 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
       </div>
 
       {suggestions && (
-        <Card className="mt-8">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xl font-bold">AI Suggestions</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setSuggestions(null);
-                setShowChat(false);
-              }}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-2">Suggested Improvements</h3>
-              <ul className="list-disc pl-4 space-y-1">
-                {suggestions.improvements.map((imp, i) => (
-                  <li key={i} className="text-muted-foreground">{imp}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Formatting Suggestions</h3>
-              <ul className="list-disc pl-4 space-y-1">
-                {suggestions.formatting.map((fmt, i) => (
-                  <li key={i} className="text-muted-foreground">{fmt}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Content Expansion Ideas</h3>
-              <ul className="list-disc pl-4 space-y-1">
-                {suggestions.expansion.map((exp, i) => (
-                  <li key={i} className="text-muted-foreground">{exp}</li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+        <Collapsible className="mt-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xl font-bold">AI Suggestions</CardTitle>
+                <CollapsibleTrigger className="hover:opacity-70">
+                  <Button variant="ghost" size="icon">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setSuggestions(null);
+                  setShowChat(false);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-2">Suggested Improvements</h3>
+                  <ul className="list-disc pl-4 space-y-1">
+                    {suggestions.improvements.map((imp, i) => (
+                      <li key={i} className="text-muted-foreground">{imp}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Formatting Suggestions</h3>
+                  <ul className="list-disc pl-4 space-y-1">
+                    {suggestions.formatting.map((fmt, i) => (
+                      <li key={i} className="text-muted-foreground">{fmt}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Content Expansion Ideas</h3>
+                  <ul className="list-disc pl-4 space-y-1">
+                    {suggestions.expansion.map((exp, i) => (
+                      <li key={i} className="text-muted-foreground">{exp}</li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       )}
 
-      {showChat && <AIChat />}
+      {showChat && (
+        <Collapsible className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xl font-bold">AI Chat Assistant</CardTitle>
+                <CollapsibleTrigger className="hover:opacity-70">
+                  <Button variant="ghost" size="icon">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent>
+                <AIChat />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
     </div>
   );
 }
