@@ -48,6 +48,10 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
   const { mutate: createCategory, isPending: isCreating } = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/categories", category);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create category");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -59,10 +63,10 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
       onOpenChange(false);
       setCategory({ name: "", description: "" });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create category",
+        description: error instanceof Error ? error.message : "Failed to create category",
         variant: "destructive"
       });
     }
@@ -72,6 +76,10 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
     mutationFn: async () => {
       if (!editingCategory) return;
       const res = await apiRequest("PATCH", `/api/categories/${editingCategory.id}`, category);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update category");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -82,10 +90,10 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
       });
       onOpenChange(false);
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to update category",
+        description: error instanceof Error ? error.message : "Failed to update category",
         variant: "destructive"
       });
     }
@@ -95,6 +103,10 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
     mutationFn: async () => {
       if (!editingCategory) return;
       const res = await apiRequest("DELETE", `/api/categories/${editingCategory.id}`);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to delete category");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -106,10 +118,10 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
       onOpenChange(false);
       setShowDeleteDialog(false);
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to delete category",
+        description: error instanceof Error ? error.message : "Failed to delete category",
         variant: "destructive"
       });
     }
