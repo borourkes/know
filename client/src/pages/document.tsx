@@ -11,10 +11,11 @@ import { useState } from "react";
 export default function DocumentPage() {
   const { id } = useParams<{ id: string }>();
   const [isEditing, setIsEditing] = useState(false);
+  const documentId = id === 'new' ? undefined : parseInt(id);
 
   const { data: document, isLoading } = useQuery<Document>({
-    queryKey: ['/api/documents', id],
-    enabled: id !== 'new' && !isNaN(parseInt(id))
+    queryKey: documentId ? [`/api/documents/${documentId}`] : null,
+    enabled: !!documentId
   });
 
   if (id === 'new') {
@@ -53,7 +54,7 @@ export default function DocumentPage() {
   if (isEditing) {
     return (
       <DocumentEditor 
-        documentId={parseInt(id)} 
+        documentId={documentId}
         initialDoc={document}
         onSaved={() => setIsEditing(false)}
       />
