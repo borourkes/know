@@ -38,10 +38,11 @@ export default function AuthPage() {
   const { mutate: login, isPending: isLoggingIn } = useMutation({
     mutationFn: async (data: LoginData) => {
       const res = await apiRequest("POST", "/api/login", data);
+      const resData = await res.json();
       if (!res.ok) {
-        throw new Error("Invalid username or password");
+        throw new Error(resData.error || "Login failed");
       }
-      return res.json();
+      return resData;
     },
     onSuccess: () => {
       setLocation("/");
@@ -58,11 +59,11 @@ export default function AuthPage() {
   const { mutate: register, isPending: isRegistering } = useMutation({
     mutationFn: async (data: InsertUser) => {
       const res = await apiRequest("POST", "/api/register", data);
+      const resData = await res.json();
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Registration failed");
+        throw new Error(resData.error || "Registration failed");
       }
-      return res.json();
+      return resData;
     },
     onSuccess: () => {
       setLocation("/");

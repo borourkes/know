@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { z } from "zod";
 
 declare global {
   namespace Express {
@@ -70,49 +71,79 @@ export function setupAuth(app: Express) {
   });
 
   // Auth routes
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", async (req, res) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
+      // Validate request body
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: "Invalid request body" });
+      }
+
+      const { username, password, displayName } = req.body;
+
+      if (!username || !password || !displayName) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ error: "Username already exists" });
       }
 
-      const hashedPassword = await hashPassword(req.body.password);
+      const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
       });
 
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          return res.status(500).json({ error: "Login failed after registration" });
+        }
         const { password, ...safeUser } = user;
         res.status(201).json(safeUser);
       });
-    } catch (err) {
-      // Handle database constraint violation errors
+    } catch (err: any) {
+      // Handle known errors
       if (err.code === '23505') { // PostgreSQL unique constraint violation
         res.status(400).json({ error: "Username already exists" });
       } else {
-        next(err);
+        // Log the error for debugging but send a safe response
+        console.error('Registration error:', err);
+        res.status(500).json({ error: "Registration failed. Please try again." });
       }
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    const { password, ...safeUser } = req.user!;
-    res.status(200).json(safeUser);
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        return res.status(500).json({ error: "Login failed" });
+      }
+      if (!user) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Login failed" });
+        }
+        const { password, ...safeUser } = user;
+        res.status(200).json(safeUser);
+      });
+    })(req, res, next);
   });
 
-  app.post("/api/logout", (req, res, next) => {
+  app.post("/api/logout", (req, res) => {
     req.logout((err) => {
-      if (err) return next(err);
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
       res.sendStatus(200);
     });
   });
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
+      return res.status(401).json({ error: "Not authenticated" });
     }
     const { password, ...safeUser } = req.user!;
     res.json(safeUser);
