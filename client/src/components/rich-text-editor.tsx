@@ -57,6 +57,35 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       active && "bg-muted text-muted-foreground"
     );
 
+  // Handle file selection for images
+  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (typeof e.target?.result === 'string') {
+          editor.chain().focus().setImage({ src: e.target.result }).run();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle drag and drop for images
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (typeof e.target?.result === 'string') {
+          editor.chain().focus().setImage({ src: e.target.result }).run();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className={className}>
       <div className="border-b border-border p-2 flex flex-wrap gap-1 bg-background sticky top-0">
@@ -147,18 +176,25 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
 
         <div className="w-px h-6 bg-border mx-1" />
 
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => {
-            const url = window.prompt('Enter image URL');
-            if (url) {
-              editor.chain().focus().setImage({ src: url }).run();
-            }
-          }}
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
+        <label htmlFor="image-upload">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="cursor-pointer"
+            asChild
+          >
+            <div>
+              <ImageIcon className="h-4 w-4" />
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageSelection}
+              />
+            </div>
+          </Button>
+        </label>
 
         <Button 
           variant="ghost" 
@@ -177,21 +213,43 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
           <LinkIcon className="h-4 w-4" />
         </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => {
-            // TODO: Implement file attachment
-            alert('File attachment coming soon!');
-          }}
-        >
-          <FileText className="h-4 w-4" />
-        </Button>
+        <label htmlFor="file-upload">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="cursor-pointer"
+            asChild
+          >
+            <div>
+              <FileText className="h-4 w-4" />
+              <input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    // Create a link to the file
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+                    editor
+                      .chain()
+                      .focus()
+                      .insertContent(`<p>📎 <a href="#">${fileName}</a> (${fileSize})</p>`)
+                      .run();
+                  }
+                }}
+              />
+            </div>
+          </Button>
+        </label>
       </div>
 
       <EditorContent 
         editor={editor} 
         className="prose prose-sm max-w-none p-4 min-h-[400px] focus:outline-none"
+        onDrop={handleDrop}
+        onDragOver={(e) => e.preventDefault()}
       />
     </div>
   );
