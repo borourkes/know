@@ -17,22 +17,24 @@ function Router() {
 
   return (
     <div className="flex">
-      <SidebarNav onSearch={() => setSearchOpen(true)} />
+      <Route path="/auth" component={AuthPage} />
 
-      <main className="flex-1">
-        <Switch>
-          <Route path="/auth" component={AuthPage} />
-          <ProtectedRoute path="/" component={Home} />
-          <ProtectedRoute path="/document/:id" component={Document} />
-          <ProtectedRoute path="/category/:id" component={Home} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
+      <ProtectedRoute>
+        <SidebarNav onSearch={() => setSearchOpen(true)} />
+        <main className="flex-1">
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/document/:id" component={Document} />
+            <Route path="/category/:id" component={Home} />
+            <Route component={NotFound} />
+          </Switch>
+        </main>
 
-      <SearchDialog 
-        open={searchOpen} 
-        onOpenChange={setSearchOpen} 
-      />
+        <SearchDialog 
+          open={searchOpen} 
+          onOpenChange={setSearchOpen} 
+        />
+      </ProtectedRoute>
     </div>
   );
 }

@@ -1,13 +1,12 @@
 import { useAuth } from "./auth-provider";
-import { Redirect, Route } from "wouter";
+import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
 
 type ProtectedRouteProps = {
-  path: string;
-  component: React.ComponentType;
+  children: React.ReactNode;
 };
 
-export function ProtectedRoute({ path, component: Component }: ProtectedRouteProps) {
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -22,9 +21,5 @@ export function ProtectedRoute({ path, component: Component }: ProtectedRoutePro
     return <Redirect to="/auth" />;
   }
 
-  return (
-    <Route path={path}>
-      <Component />
-    </Route>
-  );
+  return <>{children}</>;
 }
