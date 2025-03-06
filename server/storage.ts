@@ -94,14 +94,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchDocuments(query: string): Promise<Document[]> {
-    return await db
-      .select()
-      .from(documents)
-      .where(sql`
-        to_tsvector('english', ${documents.title} || ' ' || ${documents.content}) @@ 
-        plainto_tsquery('english', ${query})
-      `)
-      .orderBy(desc(documents.lastUpdated));
+    const searchQuery = query.trim();
+    if (!searchQuery) {
+      return [];
+    }
+
+    try {
+      // First try exact phrase matching
+      const exactMatches = await db
+        .select()
+        .from(documents)
+        .where(sql`
+          to_tsvector('english', title || ' ' || content) @@ 
+          phraseto_tsquery('english', ${searchQuery})
+        `)
+        .orderBy(desc(documents.lastUpdated));
+
+      if (exactMatches.length > 0) {
+        return exactMatches;
+      }
+
+      // If no exact matches, try fuzzy matching with plainto_tsquery
+      return await db
+        .select()
+        .from(documents)
+        .where(sql`
+          to_tsvector('english', title || ' ' || content) @@ 
+          plainto_tsquery('english', ${searchQuery})
+        `)
+        .orderBy(desc(documents.lastUpdated));
+    } catch (error) {
+      console.error('Search error:', error);
+      // Return empty array instead of throwing to maintain smooth UX
+      return [];
+    }
   }
 }
 
