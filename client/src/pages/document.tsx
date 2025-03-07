@@ -19,6 +19,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function DocumentPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +34,7 @@ export default function DocumentPage() {
   const queryClient = useQueryClient();
 
   const { data: document, isLoading } = useQuery<Document>({
-    queryKey: documentId ? [`/api/documents/${documentId}`] : null,
+    queryKey: documentId ? ['/api/documents', documentId] : null,
     enabled: !!documentId
   });
 
@@ -61,7 +66,7 @@ export default function DocumentPage() {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse p-6">
+      <div className="animate-pulse p-4 md:p-6">
         <div className="h-8 bg-muted rounded w-1/3 mb-4" />
         <div className="h-4 bg-muted rounded w-1/4 mb-8" />
         <div className="space-y-4">
@@ -75,7 +80,7 @@ export default function DocumentPage() {
 
   if (!document) {
     return (
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <Card>
           <CardContent className="pt-6">
             <h1 className="text-2xl font-bold text-destructive">Document Not Found</h1>
@@ -99,32 +104,66 @@ export default function DocumentPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">{document.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            Last updated {document.lastUpdated ? formatDistanceToNow(new Date(document.lastUpdated)) : 'Never'} ago
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsEditing(true)}
-          >
-            <Edit2 className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <Button 
-            variant="outline"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+    <div className="p-4 md:p-6">
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold truncate">{document.title}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Last updated {document.lastUpdated ? formatDistanceToNow(new Date(document.lastUpdated)) : 'Never'} ago
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            {/* Desktop buttons */}
+            <div className="hidden md:flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button 
+                variant="outline"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </div>
+            {/* Mobile icon buttons */}
+            <div className="flex md:hidden gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Edit document</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete document</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
         </div>
       </div>
+
       <Card>
         <CardContent className="pt-6">
           <div 
