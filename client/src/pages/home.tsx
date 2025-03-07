@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Document } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,8 +14,21 @@ function stripHtml(html: string) {
 }
 
 export default function Home() {
+  const { id: categoryId } = useParams<{ id: string }>();
+  const parsedCategoryId = categoryId ? parseInt(categoryId) : undefined;
+
   const { data: documents, isLoading } = useQuery<Document[]>({
-    queryKey: ['/api/documents']
+    queryKey: ['/api/documents', parsedCategoryId],
+    queryFn: async () => {
+      const url = parsedCategoryId 
+        ? `/api/documents?categoryId=${parsedCategoryId}`
+        : '/api/documents';
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch documents');
+      }
+      return response.json();
+    }
   });
 
   if (isLoading) {
@@ -56,7 +69,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          Recent Documents
+          {categoryId ? "Category Documents" : "Recent Documents"}
         </h2>
       </div>
 
