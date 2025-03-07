@@ -33,19 +33,26 @@ export default function DocumentPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: document, isLoading } = useQuery<Document>({
-    queryKey: documentId ? ['/api/documents', documentId] : [],
+  const { data: document, isLoading } = useQuery({
+    queryKey: [`document`, documentId],
+    queryFn: async () => {
+      if (!documentId) return null;
+      const response = await fetch(`/api/documents/${documentId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document');
+      }
+      return response.json();
+    },
     enabled: !!documentId,
   });
 
   const { mutate: deleteDocument } = useMutation({
     mutationFn: async () => {
       if (!documentId) return;
-      const res = await apiRequest("DELETE", `/api/documents/${documentId}`);
-      return res.json();
+      await apiRequest("DELETE", `/api/documents/${documentId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
       window.location.href = '/';
       toast({
         title: "Success",
