@@ -31,10 +31,10 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-[400px]">
-        <CardHeader>
-          <CardTitle className="text-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 md:p-8">
+      <Card className="w-full max-w-[600px] mx-auto">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">
             <span className="text-primary">know</span> | District
           </CardTitle>
         </CardHeader>
