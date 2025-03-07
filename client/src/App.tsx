@@ -16,21 +16,23 @@ function Router() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen relative">
       <Switch>
         <Route path="/auth" component={AuthPage} />
 
         <Route>
           <>
-            <SidebarNav onSearch={() => setSearchOpen(true)} />
-            <main className="flex-1">
-              <Switch>
-                <ProtectedRoute path="/" component={Home} />
-                <ProtectedRoute path="/document/:id" component={Document} />
-                <ProtectedRoute path="/category/:id" component={Home} />
-                <Route component={NotFound} />
-              </Switch>
-            </main>
+            <div className="flex w-full">
+              <SidebarNav onSearch={() => setSearchOpen(true)} />
+              <main className="flex-1 p-4 md:p-6 min-h-screen">
+                <Switch>
+                  <ProtectedRoute path="/" component={Home} />
+                  <ProtectedRoute path="/document/:id" component={Document} />
+                  <ProtectedRoute path="/category/:id" component={Home} />
+                  <Route component={NotFound} />
+                </Switch>
+              </main>
+            </div>
 
             <SearchDialog 
               open={searchOpen} 

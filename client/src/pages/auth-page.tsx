@@ -46,7 +46,7 @@ export default function AuthPage() {
 
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>Welcome</CardTitle>
+            <CardTitle className="text-2xl">Welcome</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">

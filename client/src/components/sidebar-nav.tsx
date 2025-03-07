@@ -2,13 +2,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "wouter";
-import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut } from "lucide-react";
+import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CategoryDialog } from "./category-dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 type SidebarNavProps = {
   onSearch: () => void;
@@ -18,6 +19,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   const [location] = useLocation();
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { logoutMutation } = useAuth();
 
   const { data: categories } = useQuery<Category[]>({
@@ -25,7 +27,6 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   });
 
   const handleCategoryClick = (category: Category, event: React.MouseEvent) => {
-    // Long press (500ms) to edit
     let timeoutId: NodeJS.Timeout;
 
     const handleMouseDown = () => {
@@ -45,10 +46,10 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
     window.addEventListener('mouseup', handleMouseUp, { once: true });
   };
 
-  return (
-    <div className="min-h-screen w-64 bg-sidebar border-r border-border flex flex-col">
-      <div className="p-6">
-        <h1 className="text-2xl font-semibold text-sidebar-foreground flex items-center gap-2">
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 md:p-6">
+        <h1 className="text-xl md:text-2xl font-semibold text-sidebar-foreground flex items-center gap-2">
           <span className="text-primary">know</span>
           <span className="text-muted-foreground">|</span>
           <span>District</span>
@@ -59,7 +60,10 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
         <Button 
           variant="outline" 
           className="w-full justify-start" 
-          onClick={onSearch}
+          onClick={() => {
+            onSearch();
+            setIsMobileMenuOpen(false);
+          }}
         >
           <Search className="mr-2 h-4 w-4" />
           Search
@@ -69,6 +73,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           <Button 
             variant="outline" 
             className="w-full justify-start"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
             <Plus className="mr-2 h-4 w-4" />
             New Document
@@ -81,6 +86,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           onClick={() => {
             setEditingCategory(undefined);
             setCategoryDialogOpen(true);
+            setIsMobileMenuOpen(false);
           }}
         >
           <FolderPlus className="mr-2 h-4 w-4" />
@@ -103,6 +109,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
                   "w-full justify-start",
                   location === "/" && "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <FileText className="mr-2 h-4 w-4" />
                 Recent
@@ -129,6 +136,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
                     "bg-sidebar-accent text-sidebar-accent-foreground"
                   )}
                   onMouseDown={(e) => handleCategoryClick(category, e)}
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <FolderOpen className="mr-2 h-4 w-4" />
                   {category.name}
@@ -143,12 +151,43 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-sidebar-foreground"
-          onClick={() => logoutMutation.mutate()}
+          onClick={() => {
+            logoutMutation.mutate();
+            setIsMobileMenuOpen(false);
+          }}
           disabled={logoutMutation.isPending}
         >
           <LogOut className="mr-2 h-4 w-4" />
           {logoutMutation.isPending ? "Logging out..." : "Logout"}
         </Button>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 md:hidden z-50"
+        onClick={() => setIsMobileMenuOpen(true)}
+      >
+        <Menu className="h-6 w-6" />
+      </Button>
+
+      {/* Mobile Sidebar */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetContent side="left" className="w-[80%] max-w-[300px] p-0">
+          <div className="h-full flex flex-col bg-sidebar">
+            <SidebarContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 min-h-screen flex-col bg-sidebar border-r border-border">
+        <SidebarContent />
       </div>
 
       <CategoryDialog 
@@ -159,6 +198,6 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
         }}
         editingCategory={editingCategory}
       />
-    </div>
+    </>
   );
 }
