@@ -55,7 +55,9 @@ export default function AuthPage() {
 
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle className="text-2xl">Welcome</CardTitle>
+            <CardTitle className="text-2xl">
+              <span className="text-primary">know</span> | District
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
@@ -81,8 +83,8 @@ export default function AuthPage() {
                       setFormData({ ...formData, password: e.target.value })
                     }
                   />
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     onClick={() => loginMutation.mutate(formData)}
                     disabled={loginMutation.isPending || !formData.username || !formData.password}
                   >
@@ -109,7 +111,7 @@ export default function AuthPage() {
                       setFormData({ ...formData, password: e.target.value })
                     }
                   />
-                  <Button 
+                  <Button
                     className="w-full"
                     onClick={() => registerMutation.mutate(formData)}
                     disabled={registerMutation.isPending || !formData.username || !formData.password}
