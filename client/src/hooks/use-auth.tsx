@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { type User, type InsertUser, UserRole } from "@shared/schema";
+import { type User, type InsertUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,7 +11,6 @@ type AuthContextType = {
   loginMutation: ReturnType<typeof useLoginMutation>;
   logoutMutation: ReturnType<typeof useLogoutMutation>;
   registerMutation: ReturnType<typeof useRegisterMutation>;
-  hasPermission: (roles: UserRole[]) => boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -65,7 +64,7 @@ function useLogoutMutation() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-
+  
   const {
     data: user,
     error,
@@ -87,11 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
 
-  const hasPermission = (roles: UserRole[]) => {
-    if (!user) return false;
-    return roles.includes(user.role);
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -101,7 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
-        hasPermission,
       }}
     >
       {children}

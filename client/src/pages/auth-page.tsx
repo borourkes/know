@@ -64,10 +64,7 @@ export default function AuthPage() {
                 />
                 <Button
                   className="w-full"
-                  onClick={() => loginMutation.mutate({
-                    username: formData.username,
-                    password: formData.password
-                  })}
+                  onClick={() => loginMutation.mutate(formData)}
                   disabled={loginMutation.isPending || !formData.username || !formData.password}
                 >
                   {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -95,11 +92,7 @@ export default function AuthPage() {
                 />
                 <Button
                   className="w-full"
-                  onClick={() => registerMutation.mutate({
-                    username: formData.username,
-                    password: formData.password,
-                    role: 'reader' // Default role for new users
-                  })}
+                  onClick={() => registerMutation.mutate(formData)}
                   disabled={registerMutation.isPending || !formData.username || !formData.password}
                 >
                   {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
