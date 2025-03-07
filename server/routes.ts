@@ -9,12 +9,17 @@ import {
   aiSuggestSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { searchAndRespond } from "./ai-helper";
 
 const chatSchema = z.object({
   messages: z.array(z.object({
     role: z.enum(['user', 'assistant', 'system']),
     content: z.string()
   }))
+});
+
+const aiChatSchema = z.object({
+  query: z.string().min(1, "Query cannot be empty")
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -144,6 +149,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const response = await chatWithAI(result.data.messages);
       res.json({ message: response });
+    } catch (error) {
+      const err = error as Error;
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/ai/chat/internal", async (req, res) => {
+    try {
+      const result = aiChatSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ message: "Invalid query" });
+      }
+
+      const response = await searchAndRespond(result.data.query);
+      res.json({ response });
     } catch (error) {
       const err = error as Error;
       res.status(500).json({ message: err.message });

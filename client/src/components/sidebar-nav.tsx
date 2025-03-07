@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "wouter";
-import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu, Users } from "lucide-react";
+import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu, Users, Brain } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Category, canManageUsers } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -78,6 +78,17 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
           >
             <Plus className="mr-2 h-4 w-4" />
             New Document
+          </Button>
+        </Link>
+
+        <Link href="/ai-chat">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <Brain className="mr-2 h-4 w-4" />
+            AI Assistant
           </Button>
         </Link>
 
