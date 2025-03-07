@@ -38,7 +38,7 @@ export function CategoryDialog({ open, onOpenChange, editingCategory }: Category
     if (editingCategory) {
       setCategory({
         name: editingCategory.name,
-        description: editingCategory.description
+        description: editingCategory.description || ""
       });
     } else {
       setCategory({ name: "", description: "" });

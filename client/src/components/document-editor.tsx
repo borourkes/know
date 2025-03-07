@@ -51,7 +51,7 @@ export function DocumentEditor({ documentId, initialDoc, onSaved }: DocumentEdit
   });
 
   const { data: categories } = useQuery<Category[]>({
-    queryKey: ['categories']
+    queryKey: ['/api/categories']
   });
 
   const { mutate: saveDocument, isPending: isSaving } = useMutation({
