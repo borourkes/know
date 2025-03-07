@@ -10,6 +10,7 @@ import { useState } from "react";
 import { CategoryDialog } from "./category-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "./theme-toggle";
 
 type SidebarNavProps = {
   onSearch: () => void;
@@ -171,19 +172,22 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
         )}
       </ScrollArea>
 
-      <div className="p-4 mt-auto">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-sidebar-foreground"
-          onClick={() => {
-            logoutMutation.mutate();
-            setIsMobileMenuOpen(false);
-          }}
-          disabled={logoutMutation.isPending}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          {logoutMutation.isPending ? "Logging out..." : "Logout"}
-        </Button>
+      <div className="p-4 mt-auto space-y-2">
+        <div className="flex items-center justify-between">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            className="flex-1 justify-start ml-2 text-muted-foreground hover:text-sidebar-foreground"
+            onClick={() => {
+              logoutMutation.mutate();
+              setIsMobileMenuOpen(false);
+            }}
+            disabled={logoutMutation.isPending}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+          </Button>
+        </div>
       </div>
     </>
   );

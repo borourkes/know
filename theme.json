@@ -1,11 +1,13 @@
 {
   "variant": "professional",
   "primary": "hsl(20 90% 35%)",
-  "appearance": "light",
+  "appearance": "system",
   "radius": 0.5,
   "colors": {
     "background": "hsl(0 0% 100%)",
     "foreground": "hsl(222.2 47.4% 11.2%)",
+    "muted": "hsl(210 40% 96.1%)",
+    "muted-foreground": "hsl(215.4 16.3% 46.9%)",
     "sidebar": {
       "background": "hsl(224 71% 4%)",
       "foreground": "hsl(213 31% 91%)",
@@ -15,6 +17,22 @@
       "accent-foreground": "hsl(210 40% 98%)",
       "border": "hsl(216 34% 17%)",
       "ring": "hsl(216 34% 17%)"
+    },
+    "dark": {
+      "background": "hsl(224 71% 4%)",
+      "foreground": "hsl(213 31% 91%)",
+      "muted": "hsl(223 47% 11%)",
+      "muted-foreground": "hsl(215.4 16.3% 56.9%)",
+      "sidebar": {
+        "background": "hsl(222.2 84% 4.9%)",
+        "foreground": "hsl(210 40% 98%)",
+        "primary": "hsl(210 40% 98%)",
+        "primary-foreground": "hsl(222.2 47.4% 1.2%)",
+        "accent": "hsl(217.2 32.6% 17.5%)",
+        "accent-foreground": "hsl(210 40% 98%)",
+        "border": "hsl(217.2 32.6% 17.5%)",
+        "ring": "hsl(217.2 32.6% 17.5%)"
+      }
     }
   }
 }

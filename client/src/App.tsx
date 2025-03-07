@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SearchDialog } from "@/components/search-dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/hooks/use-theme";
 import Home from "@/pages/home";
 import Document from "@/pages/document";
 import NotFound from "@/pages/not-found";
@@ -38,7 +39,7 @@ function Router() {
                   <ProtectedRoute path="/" component={Home} />
                   <ProtectedRoute path="/document/:id" component={Document} />
                   <ProtectedRoute path="/category/:id" component={Home} />
-                  <Route 
+                  <Route
                     path="/users"
                     component={() => <ProtectedAdminRoute component={UserManagement} path="/users" />}
                   />
@@ -47,9 +48,9 @@ function Router() {
               </main>
             </div>
 
-            <SearchDialog 
-              open={searchOpen} 
-              onOpenChange={setSearchOpen} 
+            <SearchDialog
+              open={searchOpen}
+              onOpenChange={setSearchOpen}
             />
           </>
         </Route>
@@ -61,12 +62,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </AuthProvider>
+      <ThemeProvider defaultTheme="system" storageKey="ui-theme">
+        <AuthProvider>
+          <TooltipProvider>
+            <Router />
+            <Toaster />
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
