@@ -175,7 +175,7 @@ export default function DocumentPage() {
       <Card className="overflow-hidden">
         <CardContent className="p-2 md:p-6">
           <div 
-            className="prose prose-sm max-w-none prose-pre:whitespace-pre-wrap prose-pre:break-words prose-pre:overflow-x-auto prose-code:whitespace-pre-wrap prose-code:break-words"
+            className="prose prose-sm max-w-none prose-pre:whitespace-pre-wrap prose-pre:break-words prose-pre:overflow-x-auto prose-code:whitespace-pre-wrap prose-code:break-words prose-table:w-full prose-table:block prose-table:overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: document.content }}
           />
         </CardContent>

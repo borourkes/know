@@ -170,7 +170,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-4 left-4 md:hidden z-50"
+        className="fixed top-4 left-4 md:hidden z-50 bg-background shadow-sm hover:bg-accent"
         onClick={() => setIsMobileMenuOpen(true)}
       >
         <Menu className="h-6 w-6" />

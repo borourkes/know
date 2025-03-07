@@ -31,9 +31,12 @@
 
   .prose table {
     @apply w-full max-w-full table-auto;
+    @apply block overflow-x-auto;
   }
 
   .prose td, .prose th {
     @apply break-words;
+    @apply p-2;
+    @apply min-w-[100px];
   }
 }
