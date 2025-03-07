@@ -33,12 +33,21 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="flex w-full max-w-[1000px] gap-8">
-        <div className="flex-1 hidden md:block">
-          <div className="space-y-4">
+        {/* Brand section - Always visible on mobile */}
+        <div className="flex-1 flex flex-col gap-4">
+          <div className="md:hidden mb-6">
+            <h1 className="text-3xl font-bold">
+              <span className="text-primary">know</span> | District
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Get to KNOW all the internal processes and everything that is District
+            </p>
+          </div>
+          <div className="hidden md:block">
             <h1 className="text-4xl font-bold">
               <span className="text-primary">know</span> | District
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg mt-4">
               Get to KNOW all the internal processes and everything that is District
             </p>
           </div>
