@@ -74,7 +74,7 @@ export default function DocumentPage() {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse p-4 md:p-6">
+      <div className="p-2 md:p-6">
         <div className="h-8 bg-muted rounded w-1/3 mb-4" />
         <div className="h-4 bg-muted rounded w-1/4 mb-8" />
         <div className="space-y-4">
@@ -88,7 +88,7 @@ export default function DocumentPage() {
 
   if (!document) {
     return (
-      <div className="p-4 md:p-6">
+      <div className="p-2 md:p-6">
         <Card>
           <CardContent className="pt-6">
             <h1 className="text-2xl font-bold text-destructive">Document Not Found</h1>
@@ -112,11 +112,11 @@ export default function DocumentPage() {
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="mb-6">
+    <div className="p-2 md:p-6">
+      <div className="mb-4 md:mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold truncate">{document.title}</h1>
+            <h1 className="text-xl md:text-3xl font-bold truncate">{document.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Last updated {document.lastUpdated ? formatDistanceToNow(new Date(document.lastUpdated)) : 'Never'} ago
             </p>
@@ -172,10 +172,10 @@ export default function DocumentPage() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="overflow-hidden">
+        <CardContent className="p-2 md:p-6">
           <div 
-            className="prose prose-sm max-w-none break-words overflow-x-auto px-1"
+            className="prose prose-sm max-w-none prose-pre:whitespace-pre-wrap prose-pre:break-words prose-pre:overflow-x-auto prose-code:whitespace-pre-wrap prose-code:break-words"
             dangerouslySetInnerHTML={{ __html: document.content }}
           />
         </CardContent>
