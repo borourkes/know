@@ -9,6 +9,7 @@ import {
   aiSuggestSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { isAuthenticated, checkRole } from "./auth";
 
 const chatSchema = z.object({
   messages: z.array(z.object({
@@ -18,13 +19,13 @@ const chatSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Categories
-  app.get("/api/categories", async (_req, res) => {
+  // Categories - Admin only
+  app.get("/api/categories", isAuthenticated, async (_req, res) => {
     const categories = await storage.getCategories();
     res.json(categories);
   });
 
-  app.post("/api/categories", async (req, res) => {
+  app.post("/api/categories", isAuthenticated, checkRole(['admin']), async (req, res) => {
     const result = insertCategorySchema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "Invalid category data" });
@@ -34,7 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(category);
   });
 
-  app.patch("/api/categories/:id", async (req, res) => {
+  app.patch("/api/categories/:id", isAuthenticated, checkRole(['admin']), async (req, res) => {
     const result = insertCategorySchema.partial().safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "Invalid category data" });
@@ -49,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/categories/:id", async (req, res) => {
+  app.delete("/api/categories/:id", isAuthenticated, checkRole(['admin']), async (req, res) => {
     try {
       await storage.deleteCategory(Number(req.params.id));
       res.json({ message: "Category deleted successfully" });
@@ -59,14 +60,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Documents
-  app.get("/api/documents", async (req, res) => {
+  // Documents - Editors can create/edit, Readers can only view
+  app.get("/api/documents", isAuthenticated, async (req, res) => {
     const categoryId = req.query.categoryId ? Number(req.query.categoryId) : undefined;
     const documents = await storage.getDocuments(categoryId);
     res.json(documents);
   });
 
-  app.get("/api/documents/:id", async (req, res) => {
+  app.get("/api/documents/:id", isAuthenticated, async (req, res) => {
     const document = await storage.getDocument(Number(req.params.id));
     if (!document) {
       res.status(404).json({ message: "Document not found" });
@@ -75,8 +76,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(document);
   });
 
-  app.post("/api/documents", async (req, res) => {
-    const result = insertDocumentSchema.safeParse(req.body);
+  app.post("/api/documents", isAuthenticated, checkRole(['admin', 'editor']), async (req, res) => {
+    const result = insertDocumentSchema.safeParse({
+      ...req.body,
+      userId: req.user?.id
+    });
     if (!result.success) {
       res.status(400).json({ message: "Invalid document data" });
       return;
@@ -85,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(document);
   });
 
-  app.patch("/api/documents/:id", async (req, res) => {
+  app.patch("/api/documents/:id", isAuthenticated, checkRole(['admin', 'editor']), async (req, res) => {
     const result = insertDocumentSchema.partial().safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "Invalid document data" });
@@ -100,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/documents/:id", async (req, res) => {
+  app.delete("/api/documents/:id", isAuthenticated, checkRole(['admin', 'editor']), async (req, res) => {
     try {
       await storage.deleteDocument(Number(req.params.id));
       res.json({ message: "Document deleted successfully" });
@@ -110,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/documents/search", async (req, res) => {
+  app.post("/api/documents/search", isAuthenticated, async (req, res) => {
     const result = documentSearchSchema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "Invalid search query" });
@@ -120,7 +124,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(documents);
   });
 
-  app.post("/api/ai/suggest", async (req, res) => {
+  // AI features - Available to editors and admins
+  app.post("/api/ai/suggest", isAuthenticated, checkRole(['admin', 'editor']), async (req, res) => {
     const result = aiSuggestSchema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "Invalid content" });
@@ -135,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/ai/chat", async (req, res) => {
+  app.post("/api/ai/chat", isAuthenticated, checkRole(['admin', 'editor']), async (req, res) => {
     const result = chatSchema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "Invalid chat messages" });
