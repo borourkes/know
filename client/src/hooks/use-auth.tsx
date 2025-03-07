@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { type User, type InsertUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 type AuthContextType = {
   user: User | null;
@@ -48,6 +49,8 @@ function useRegisterMutation() {
 }
 
 function useLogoutMutation() {
+  const [, setLocation] = useLocation();
+
   return useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/logout");
@@ -58,13 +61,14 @@ function useLogoutMutation() {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
+      setLocation("/auth");
     },
   });
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  
+
   const {
     data: user,
     error,
