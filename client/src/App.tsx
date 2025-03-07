@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SearchDialog } from "@/components/search-dialog";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/home";
 import Document from "@/pages/document";
 import NotFound from "@/pages/not-found";
@@ -49,8 +50,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
+        <TooltipProvider>
+          <Router />
+          <Toaster />
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
