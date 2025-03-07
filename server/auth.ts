@@ -1,21 +1,15 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User } from "@shared/schema";
+import { User, UserRole, canManageUsers, canManageCategories, canEditDocuments, canReadDocuments } from "@shared/schema";
 import memorystore from "memorystore";
 
 const MemoryStore = memorystore(session);
 const scryptAsync = promisify(scrypt);
-
-declare global {
-  namespace Express {
-    interface User extends User {}
-  }
-}
 
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
@@ -28,6 +22,36 @@ async function comparePasswords(supplied: string, stored: string) {
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
+}
+
+// Role-based authorization middleware
+export function checkRole(allowedRoles: UserRole[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    if (!allowedRoles.includes(req.user.role as UserRole)) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    next();
+  };
+}
+
+export async function createDefaultAdminIfNeeded() {
+  try {
+    const adminUser = await storage.getUserByUsername('admin');
+    if (!adminUser) {
+      const hashedPassword = await hashPassword('admin123'); // Default password
+      await storage.createUser({
+        username: 'admin',
+        password: hashedPassword,
+        role: UserRole.ADMIN
+      });
+      console.log('Default admin user created');
+    }
+  } catch (error) {
+    console.error('Error creating default admin:', error);
+  }
 }
 
 export function setupAuth(app: Express) {
@@ -61,7 +85,7 @@ export function setupAuth(app: Express) {
     }
   }));
 
-  passport.serializeUser((user, done) => {
+  passport.serializeUser((user: User, done) => {
     done(null, user.id);
   });
 
@@ -77,6 +101,32 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Create default admin user on startup
+  createDefaultAdminIfNeeded();
+
+  // User management endpoints (Admin only)
+  app.get("/api/users", checkRole([UserRole.ADMIN]), async (_req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching users" });
+    }
+  });
+
+  app.patch("/api/users/:id/role", checkRole([UserRole.ADMIN]), async (req, res) => {
+    try {
+      const { role } = req.body;
+      if (!Object.values(UserRole).includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      const user = await storage.updateUserRole(Number(req.params.id), role);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating user role" });
+    }
+  });
+
   // Authentication endpoints
   app.post("/api/register", async (req, res) => {
     try {
@@ -88,7 +138,8 @@ export function setupAuth(app: Express) {
       const hashedPassword = await hashPassword(req.body.password);
       const user = await storage.createUser({
         ...req.body,
-        password: hashedPassword
+        password: hashedPassword,
+        role: UserRole.READER // Default role for new users
       });
 
       req.login(user, (err) => {
@@ -136,7 +187,7 @@ export function setupAuth(app: Express) {
   });
 }
 
-export function isAuthenticated(req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
   if (req.isAuthenticated()) {
     return next();
   }

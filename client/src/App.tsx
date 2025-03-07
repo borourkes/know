@@ -12,6 +12,14 @@ import Home from "@/pages/home";
 import Document from "@/pages/document";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
+import UserManagement from "@/pages/user-management";
+import { useAuth } from "@/hooks/use-auth";
+import { canManageUsers } from "@shared/schema";
+
+function ProtectedAdminRoute({ component: Component, ...props }: { component: React.ComponentType, path: string }) {
+  const { user } = useAuth();
+  return canManageUsers(user) ? <Component {...props} /> : <NotFound />;
+}
 
 function Router() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -30,6 +38,10 @@ function Router() {
                   <ProtectedRoute path="/" component={Home} />
                   <ProtectedRoute path="/document/:id" component={Document} />
                   <ProtectedRoute path="/category/:id" component={Home} />
+                  <Route 
+                    path="/users"
+                    component={() => <ProtectedAdminRoute component={UserManagement} path="/users" />}
+                  />
                   <Route component={NotFound} />
                 </Switch>
               </main>

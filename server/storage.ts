@@ -17,6 +17,8 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getUsers(): Promise<User[]>;
+  updateUserRole(id: number, role: string): Promise<User>;
 
   // Categories
   getCategories(): Promise<Category[]>;
@@ -58,6 +60,27 @@ export class DatabaseStorage implements IStorage {
       .values(user)
       .returning();
     return newUser;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .orderBy(users.username);
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user;
   }
 
   async getCategories(): Promise<Category[]> {

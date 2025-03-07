@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "wouter";
-import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu } from "lucide-react";
+import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Category } from "@shared/schema";
+import { Category, canManageUsers } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CategoryDialog } from "./category-dialog";
@@ -20,7 +20,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { logoutMutation } = useAuth();
+  const { user, logoutMutation } = useAuth();
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ['/api/categories']
@@ -145,6 +145,30 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
             ))}
           </div>
         </div>
+
+        {/* Admin Only: User Management Section */}
+        {canManageUsers(user) && (
+          <div className="px-4 py-2">
+            <h2 className="mb-2 text-lg font-semibold tracking-tight">
+              Administration
+            </h2>
+            <div className="space-y-1">
+              <Link href="/users">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start",
+                    location === "/users" && "bg-sidebar-accent text-sidebar-accent-foreground"
+                  )}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Users
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
       <div className="p-4 mt-auto">
