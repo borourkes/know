@@ -25,7 +25,7 @@ function Router() {
           <>
             <div className="flex w-full">
               <SidebarNav onSearch={() => setSearchOpen(true)} />
-              <main className="flex-1 p-4 md:p-6 min-h-screen">
+              <main className="flex-1 min-h-screen pl-16 md:pl-0">
                 <Switch>
                   <ProtectedRoute path="/" component={Home} />
                   <ProtectedRoute path="/document/:id" component={Document} />

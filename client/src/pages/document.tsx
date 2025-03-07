@@ -116,7 +116,7 @@ export default function DocumentPage() {
       <div className="mb-4 md:mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-3xl font-bold truncate">{document.title}</h1>
+            <h1 className="text-xl md:text-3xl font-bold break-words">{document.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Last updated {document.lastUpdated ? formatDistanceToNow(new Date(document.lastUpdated)) : 'Never'} ago
             </p>
