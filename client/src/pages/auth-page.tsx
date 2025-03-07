@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AuthPage() {
   const [_, setLocation] = useLocation();
@@ -14,7 +13,6 @@ export default function AuthPage() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    role: "reader" as const
   });
 
   // Redirect if already authenticated
@@ -95,24 +93,13 @@ export default function AuthPage() {
                     setFormData({ ...formData, password: e.target.value })
                   }
                 />
-                <Select
-                  value={formData.role}
-                  onValueChange={(value: "admin" | "editor" | "reader") =>
-                    setFormData({ ...formData, role: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="reader">Reader</SelectItem>
-                    <SelectItem value="editor">Editor</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Button
                   className="w-full"
-                  onClick={() => registerMutation.mutate(formData)}
+                  onClick={() => registerMutation.mutate({
+                    username: formData.username,
+                    password: formData.password,
+                    role: 'reader' // Default role for new users
+                  })}
                   disabled={registerMutation.isPending || !formData.username || !formData.password}
                 >
                   {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
