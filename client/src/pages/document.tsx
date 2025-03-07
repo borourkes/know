@@ -34,12 +34,13 @@ export default function DocumentPage() {
   const queryClient = useQueryClient();
 
   const { data: document, isLoading } = useQuery<Document>({
-    queryKey: documentId ? ['/api/documents', documentId] : null,
-    enabled: !!documentId
+    queryKey: documentId ? ['/api/documents', documentId] : [],
+    enabled: !!documentId,
   });
 
   const { mutate: deleteDocument } = useMutation({
     mutationFn: async () => {
+      if (!documentId) return;
       const res = await apiRequest("DELETE", `/api/documents/${documentId}`);
       return res.json();
     },
