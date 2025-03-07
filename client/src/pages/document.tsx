@@ -175,7 +175,7 @@ export default function DocumentPage() {
       <Card>
         <CardContent className="pt-6">
           <div 
-            className="prose prose-sm max-w-none"
+            className="prose prose-sm max-w-none break-words overflow-x-auto px-1"
             dangerouslySetInnerHTML={{ __html: document.content }}
           />
         </CardContent>
