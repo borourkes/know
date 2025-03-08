@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, UserRole } from "@shared/schema";
+import { User, UserRole, canManageUsers } from "@shared/schema";
 import {
   Select,
   SelectContent,
@@ -10,22 +10,40 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from "lucide-react";
 
 export default function UserManagement() {
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
-  const { data: users, isLoading } = useQuery<User[]>({
+  // Return early if user doesn't have permission
+  if (!canManageUsers(currentUser)) {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+        <p>You don't have permission to manage users.</p>
+      </div>
+    );
+  }
+
+  const { data: users, isLoading, error, isError } = useQuery<User[]>({
     queryKey: ['/api/users'],
+    retry: 3,
+    staleTime: 30000,
   });
 
-  const { mutate: updateUserRole } = useMutation({
+  const { mutate: updateUserRole, isPending: isUpdating } = useMutation({
     mutationFn: async ({ userId, role }: { userId: number; role: string }) => {
       const response = await fetch(`/api/users/${userId}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role })
       });
-      if (!response.ok) throw new Error('Failed to update user role');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update user role');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -45,7 +63,20 @@ export default function UserManagement() {
   });
 
   if (isLoading) {
-    return <div className="p-4">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Error Loading Users</h1>
+        <p className="text-destructive">{error?.message || 'Failed to load users'}</p>
+      </div>
+    );
   }
 
   return (
@@ -62,6 +93,7 @@ export default function UserManagement() {
                 <span className="text-sm text-muted-foreground">Role:</span>
                 <Select
                   defaultValue={user.role}
+                  disabled={isUpdating}
                   onValueChange={(newRole) => 
                     updateUserRole({ userId: user.id, role: newRole })
                   }
