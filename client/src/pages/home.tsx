@@ -24,11 +24,14 @@ export default function Home() {
       if (!parsedCategoryId) return null;
       const response = await fetch(`/api/categories/${parsedCategoryId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch category');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch category');
       }
       return response.json();
     },
-    enabled: !!parsedCategoryId
+    enabled: !!parsedCategoryId,
+    retry: 3,
+    staleTime: 30000
   });
 
   const { data: documents, isLoading: isDocumentsLoading } = useQuery<Document[]>({
