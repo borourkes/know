@@ -50,11 +50,13 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
   const SidebarContent = () => (
     <>
       <div className="p-4 md:p-6">
-        <h1 className="text-xl md:text-2xl font-semibold text-sidebar-foreground flex items-center gap-2">
-          <span className="text-primary">know</span>
-          <span className="text-muted-foreground">|</span>
-          <span>District</span>
-        </h1>
+        <Link href="/">
+          <h1 className="text-xl md:text-2xl font-semibold text-sidebar-foreground flex items-center gap-2 cursor-pointer hover:opacity-80">
+            <span className="text-primary">know</span>
+            <span className="text-muted-foreground">|</span>
+            <span>District</span>
+          </h1>
+        </Link>
       </div>
 
       <div className="px-4 mb-4 space-y-2">
