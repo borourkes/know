@@ -67,12 +67,6 @@ export default function Home() {
     );
   }
 
-  const pageTitle = categoryId 
-    ? category 
-      ? `Category: ${category.name}` 
-      : "Category: Loading..."
-    : "Recent Documents";
-
   return (
     <div className="p-6">
       <div className="max-w-2xl mx-auto text-center mb-12">
@@ -91,7 +85,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          {pageTitle}
+          {categoryId && category ? `Category: ${category.name}` : "Recent Documents"}
         </h2>
       </div>
 
