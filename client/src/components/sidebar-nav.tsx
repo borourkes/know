@@ -211,6 +211,43 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
       </div>
     </>
   );
-};
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 md:hidden z-50 bg-background shadow-sm hover:bg-accent"
+        onClick={() => setIsMobileMenuOpen(true)}
+      >
+        <Menu className="h-6 w-6" />
+      </Button>
+
+      {/* Mobile Sidebar */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetContent side="left" className="w-[80%] max-w-[300px] p-0">
+          <div className="h-full flex flex-col bg-sidebar">
+            <SidebarContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 min-h-screen flex-col bg-sidebar border-r border-border">
+        <SidebarContent />
+      </div>
+
+      <CategoryDialog 
+        open={categoryDialogOpen}
+        onOpenChange={(open) => {
+          setCategoryDialogOpen(open);
+          if (!open) setEditingCategory(undefined);
+        }}
+        editingCategory={editingCategory}
+      />
+    </>
+  );
+}
 
 export default SidebarNav;
