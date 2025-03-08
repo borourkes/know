@@ -45,6 +45,14 @@ export default function Home() {
     }
   });
 
+  const pageTitle = categoryId 
+    ? isCategoryLoading 
+      ? "Loading Category..." 
+      : category 
+        ? `Category: ${category.name}`
+        : "Category Not Found"
+    : "Recent Documents";
+
   if (isDocumentsLoading) {
     return (
       <div className="p-6">
@@ -58,12 +66,7 @@ export default function Home() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
             <FileText className="h-8 w-8" />
-            {categoryId 
-              ? isCategoryLoading 
-                ? "Loading Category..." 
-                : `${category?.name} Category Documents`
-              : "Recent Documents"
-            }
+            {pageTitle}
           </h2>
         </div>
 
@@ -102,12 +105,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          {categoryId
-            ? isCategoryLoading
-              ? "Loading Category..."
-              : `${category?.name} Category Documents`
-            : "Recent Documents"
-          }
+          {pageTitle}
         </h2>
       </div>
 
