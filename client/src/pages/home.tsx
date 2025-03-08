@@ -18,23 +18,20 @@ export default function Home() {
   const parsedCategoryId = categoryId ? parseInt(categoryId) : undefined;
 
   // Fetch category details if we're viewing a specific category
-  const { data: category, isLoading: isCategoryLoading } = useQuery<Category>({
+  const { data: category } = useQuery<Category>({
     queryKey: ['/api/categories', parsedCategoryId],
     queryFn: async () => {
       if (!parsedCategoryId) return null;
       const response = await fetch(`/api/categories/${parsedCategoryId}`);
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to fetch category');
+        throw new Error('Failed to fetch category');
       }
       return response.json();
     },
-    enabled: !!parsedCategoryId,
-    retry: 3,
-    staleTime: 30000
+    enabled: !!parsedCategoryId
   });
 
-  const { data: documents, isLoading: isDocumentsLoading } = useQuery<Document[]>({
+  const { data: documents, isLoading } = useQuery<Document[]>({
     queryKey: ['/api/documents', parsedCategoryId],
     queryFn: async () => {
       const url = parsedCategoryId 
@@ -48,31 +45,9 @@ export default function Home() {
     }
   });
 
-  const pageTitle = categoryId 
-    ? isCategoryLoading 
-      ? "Loading Category..." 
-      : category 
-        ? `Category: ${category.name}`
-        : "Category Not Found"
-    : "Recent Documents";
-
-  if (isDocumentsLoading) {
+  if (isLoading) {
     return (
       <div className="p-6">
-        <div className="max-w-2xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Welcome to know | District</h1>
-          <p className="text-muted-foreground mb-6">
-            Get to KNOW all the internal processes and everything that is District
-          </p>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-            <FileText className="h-8 w-8" />
-            {pageTitle}
-          </h2>
-        </div>
-
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -108,7 +83,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          {pageTitle}
+          {categoryId ? `${category?.name || 'Loading...'} Category Documents` : "Recent Documents"}
         </h2>
       </div>
 
