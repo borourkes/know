@@ -16,7 +16,8 @@ import AuthPage from "@/pages/auth-page";
 import UserManagement from "@/pages/user-management";
 import { useAuth } from "@/hooks/use-auth";
 import { canManageUsers } from "@shared/schema";
-import AiChat from "@/pages/ai-chat"; // Add this import
+import AiChat from "@/pages/ai-chat";
+import Documentation from "@/pages/documentation"; // Add this import
 
 function ProtectedAdminRoute({ component: Component, ...props }: { component: React.ComponentType, path: string }) {
   const { user } = useAuth();
@@ -44,7 +45,8 @@ function Router() {
                     path="/users"
                     component={() => <ProtectedAdminRoute component={UserManagement} path="/users" />}
                   />
-                  <ProtectedRoute path="/ai-chat" component={AiChat} /> {/* Add this route */}
+                  <ProtectedRoute path="/ai-chat" component={AiChat} />
+                  <ProtectedRoute path="/docs" component={Documentation} /> {/* Add this route */}
                   <Route component={NotFound} />
                 </Switch>
               </main>

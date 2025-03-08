@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "wouter";
-import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu, Users, Brain } from "lucide-react";
+import { Search, FileText, FolderOpen, Plus, FolderPlus, LogOut, Menu, Users, Brain, Book } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Category, canManageUsers } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -91,7 +91,16 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
             AI Assistant
           </Button>
         </Link>
-
+        <Link href="/docs">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <Book className="mr-2 h-4 w-4" />
+            Documentation
+          </Button>
+        </Link>
         <Button 
           variant="outline" 
           className="w-full justify-start"
@@ -202,41 +211,6 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
       </div>
     </>
   );
+};
 
-  return (
-    <>
-      {/* Mobile Menu Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 md:hidden z-50 bg-background shadow-sm hover:bg-accent"
-        onClick={() => setIsMobileMenuOpen(true)}
-      >
-        <Menu className="h-6 w-6" />
-      </Button>
-
-      {/* Mobile Sidebar */}
-      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side="left" className="w-[80%] max-w-[300px] p-0">
-          <div className="h-full flex flex-col bg-sidebar">
-            <SidebarContent />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 min-h-screen flex-col bg-sidebar border-r border-border">
-        <SidebarContent />
-      </div>
-
-      <CategoryDialog 
-        open={categoryDialogOpen}
-        onOpenChange={(open) => {
-          setCategoryDialogOpen(open);
-          if (!open) setEditingCategory(undefined);
-        }}
-        editingCategory={editingCategory}
-      />
-    </>
-  );
-}
+export default SidebarNav;
