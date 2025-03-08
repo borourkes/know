@@ -83,7 +83,11 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          {categoryId ? `${category?.name || 'Loading...'} Category Documents` : "Recent Documents"}
+          {categoryId ? (
+            <>Category: {category?.name || 'Loading...'}</>
+          ) : (
+            "Recent Documents"
+          )}
         </h2>
       </div>
 
