@@ -1,11 +1,11 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 
-const Documentation = () => {
+const Help = () => {
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Documentation</h1>
-      
+      <h1 className="text-3xl font-bold mb-8">Help</h1>
+
       <div className="space-y-8">
         <section>
           <h2 className="text-2xl font-semibold mb-4">Getting Started</h2>
@@ -16,7 +16,7 @@ const Documentation = () => {
                 This platform helps you create, organize, and share internal knowledge
                 while leveraging AI to make information easily accessible.
               </p>
-              
+
               <h3 className="text-xl font-medium mb-2">Key Features</h3>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Document creation and organization with rich text editing</li>
@@ -178,4 +178,4 @@ const Documentation = () => {
   );
 };
 
-export default Documentation;
+export default Help;

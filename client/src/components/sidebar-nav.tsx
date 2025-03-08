@@ -98,7 +98,7 @@ export function SidebarNav({ onSearch }: SidebarNavProps) {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <Book className="mr-2 h-4 w-4" />
-            Documentation
+            Help
           </Button>
         </Link>
         <Button 
