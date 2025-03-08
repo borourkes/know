@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User, UserRole, canManageUsers, canManageCategories, canEditDocuments, canReadDocuments } from "@shared/schema";
+import { User, UserRole, canManageUsers } from "@shared/schema";
 import memorystore from "memorystore";
 
 const MemoryStore = memorystore(session);
@@ -105,7 +105,7 @@ export function setupAuth(app: Express) {
   createDefaultAdminIfNeeded();
 
   // User management endpoints (Admin only)
-  app.get("/api/users", checkRole([UserRole.ADMIN]), async (_req, res) => {
+  app.get("/api/users", isAuthenticated, checkRole([UserRole.ADMIN]), async (_req, res) => {
     try {
       const users = await storage.getUsers();
       res.json(users);
@@ -114,7 +114,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.patch("/api/users/:id/role", checkRole([UserRole.ADMIN]), async (req, res) => {
+  app.patch("/api/users/:id/role", isAuthenticated, checkRole([UserRole.ADMIN]), async (req, res) => {
     try {
       const { role } = req.body;
       if (!Object.values(UserRole).includes(role)) {
