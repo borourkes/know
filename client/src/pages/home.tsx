@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Document } from "@shared/schema";
+import { Document, Category } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,20 @@ function stripHtml(html: string) {
 export default function Home() {
   const { id: categoryId } = useParams<{ id: string }>();
   const parsedCategoryId = categoryId ? parseInt(categoryId) : undefined;
+
+  // Fetch category details if we're viewing a specific category
+  const { data: category } = useQuery<Category>({
+    queryKey: ['/api/categories', parsedCategoryId],
+    queryFn: async () => {
+      if (!parsedCategoryId) return null;
+      const response = await fetch(`/api/categories/${parsedCategoryId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch category');
+      }
+      return response.json();
+    },
+    enabled: !!parsedCategoryId
+  });
 
   const { data: documents, isLoading } = useQuery<Document[]>({
     queryKey: ['/api/documents', parsedCategoryId],
@@ -69,7 +83,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          {categoryId ? "Category Documents" : "Recent Documents"}
+          {categoryId ? `${category?.name || 'Loading...'} Category Documents` : "Recent Documents"}
         </h2>
       </div>
 
