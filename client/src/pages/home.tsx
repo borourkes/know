@@ -86,7 +86,7 @@ export default function Home() {
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
           {categoryId ? (
-            `Category: ${category?.name}`
+            `Category: ${category?.name || 'undefined'}`
           ) : (
             "Recent Documents"
           )}
