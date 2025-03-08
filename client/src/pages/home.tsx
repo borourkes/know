@@ -18,7 +18,7 @@ export default function Home() {
   const parsedCategoryId = categoryId ? parseInt(categoryId) : undefined;
 
   // Fetch category details if we're viewing a specific category
-  const { data: category } = useQuery<Category>({
+  const { data: category, isLoading: isCategoryLoading } = useQuery<Category>({
     queryKey: ['/api/categories', parsedCategoryId],
     queryFn: async () => {
       if (!parsedCategoryId) return null;
@@ -31,7 +31,7 @@ export default function Home() {
     enabled: !!parsedCategoryId
   });
 
-  const { data: documents, isLoading } = useQuery<Document[]>({
+  const { data: documents, isLoading: isDocumentsLoading } = useQuery<Document[]>({
     queryKey: ['/api/documents', parsedCategoryId],
     queryFn: async () => {
       const url = parsedCategoryId 
@@ -45,9 +45,28 @@ export default function Home() {
     }
   });
 
-  if (isLoading) {
+  if (isDocumentsLoading) {
     return (
       <div className="p-6">
+        <div className="max-w-2xl mx-auto text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">Welcome to know | District</h1>
+          <p className="text-muted-foreground mb-6">
+            Get to KNOW all the internal processes and everything that is District
+          </p>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
+            <FileText className="h-8 w-8" />
+            {categoryId 
+              ? isCategoryLoading 
+                ? "Loading Category..." 
+                : `${category?.name} Category Documents`
+              : "Recent Documents"
+            }
+          </h2>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -83,7 +102,12 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          {categoryId ? `${category?.name || 'Loading...'} Category Documents` : "Recent Documents"}
+          {categoryId
+            ? isCategoryLoading
+              ? "Loading Category..."
+              : `${category?.name} Category Documents`
+            : "Recent Documents"
+          }
         </h2>
       </div>
 
