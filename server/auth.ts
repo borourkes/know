@@ -65,8 +65,9 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      secure: false, // Set to false to work in both HTTP and HTTPS
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax' // Allow cookies in same-site requests
     }
   }));
 
@@ -85,7 +86,7 @@ export function setupAuth(app: Express) {
     }
   }));
 
-  passport.serializeUser((user: User, done) => {
+  passport.serializeUser((user: Express.User, done) => {
     done(null, user.id);
   });
 
@@ -103,29 +104,6 @@ export function setupAuth(app: Express) {
 
   // Create default admin user on startup
   createDefaultAdminIfNeeded();
-
-  // User management endpoints (Admin only)
-  app.get("/api/users", isAuthenticated, checkRole([UserRole.ADMIN]), async (_req, res) => {
-    try {
-      const users = await storage.getUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching users" });
-    }
-  });
-
-  app.patch("/api/users/:id/role", isAuthenticated, checkRole([UserRole.ADMIN]), async (req, res) => {
-    try {
-      const { role } = req.body;
-      if (!Object.values(UserRole).includes(role)) {
-        return res.status(400).json({ message: "Invalid role" });
-      }
-      const user = await storage.updateUserRole(Number(req.params.id), role);
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Error updating user role" });
-    }
-  });
 
   // Authentication endpoints
   app.post("/api/register", async (req, res) => {
@@ -184,6 +162,29 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     res.json(req.user);
+  });
+
+  // User management endpoints (Admin only)
+  app.get("/api/users", isAuthenticated, checkRole([UserRole.ADMIN]), async (_req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching users" });
+    }
+  });
+
+  app.patch("/api/users/:id/role", isAuthenticated, checkRole([UserRole.ADMIN]), async (req, res) => {
+    try {
+      const { role } = req.body;
+      if (!Object.values(UserRole).includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      const user = await storage.updateUserRole(Number(req.params.id), role);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating user role" });
+    }
   });
 }
 
