@@ -18,7 +18,7 @@ export default function Home() {
   const parsedCategoryId = categoryId ? parseInt(categoryId) : undefined;
 
   // Fetch category details if we're viewing a specific category
-  const { data: category } = useQuery<Category>({
+  const { data: category, isLoading: isCategoryLoading } = useQuery<Category>({
     queryKey: ['/api/categories', parsedCategoryId],
     queryFn: async () => {
       if (!parsedCategoryId) return null;
@@ -31,7 +31,7 @@ export default function Home() {
     enabled: !!parsedCategoryId
   });
 
-  const { data: documents, isLoading } = useQuery<Document[]>({
+  const { data: documents, isLoading: isDocumentsLoading } = useQuery<Document[]>({
     queryKey: ['/api/documents', parsedCategoryId],
     queryFn: async () => {
       const url = parsedCategoryId 
@@ -44,6 +44,8 @@ export default function Home() {
       return response.json();
     }
   });
+
+  const isLoading = isDocumentsLoading || (categoryId && isCategoryLoading);
 
   if (isLoading) {
     return (
